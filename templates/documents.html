@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}Kho tài liệu - Học Tin THPT{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>📚 Kho tài liệu học tập</h1>
+        <p class="subtitle">Video bài giảng và tài liệu tham khảo</p>
+        
+        {% if session.role == 'teacher' %}
+        <a href="{{ url_for('add_document') }}" class="btn btn-primary">+ Thêm tài liệu mới</a>
+        {% endif %}
+    </div>
+
+    <div class="filters">
+        <button class="filter-btn active" onclick="filterDocs('all')">Tất cả</button>
+        <button class="filter-btn" onclick="filterDocs('youtube')">🎥 YouTube</button>
+        <button class="filter-btn" onclick="filterDocs('drive')">📁 Google Drive</button>
+        <button class="filter-btn" onclick="filterDocs('other')">📄 Khác</button>
+    </div>
+
+    {% if youtube_docs or drive_docs or other_docs %}
+    <div class="documents-grid" id="documentsGrid">
+        {% for doc in youtube_docs %}
+        <div class="document-card" data-type="youtube">
+            <div class="doc-icon youtube-icon">🎥</div>
+            <h3>{{ doc.title }}</h3>
+            <p class="doc-description">{{ doc.description or 'Video bài giảng' }}</p>
+            <div class="doc-meta">
+                <span class="doc-type-badge youtube">YouTube</span>
+                <span class="doc-date">{{ doc.created_at[:10] if doc.created_at else 'N/A' }}</span>
+            </div>
+            <a href="{{ doc.url }}" target="_blank" class="btn btn-primary btn-block">
+                ▶️ Xem video
+            </a>
+        </div>
+        {% endfor %}
+
+        {% for doc in drive_docs %}
+        <div class="document-card" data-type="drive">
+            <div class="doc-icon drive-icon">📁</div>
+            <h3>{{ doc.title }}</h3>
+            <p class="doc-description">{{ doc.description or 'Tài liệu học tập' }}</p>
+            <div class="doc-meta">
+                <span class="doc-type-badge drive">Google Drive</span>
+                <span class="doc-date">{{ doc.created_at[:10] if doc.created_at else 'N/A' }}</span>
+            </div>
+            <a href="{{ doc.url }}" target="_blank" class="btn btn-success btn-block">
+                📥 Tải tài liệu
+            </a>
+        </div>
+        {% endfor %}
+
+        {% for doc in other_docs %}
+        <div class="document-card" data-type="other">
+            <div class="doc-icon other-icon">📄</div>
+            <h3>{{ doc.title }}</h3>
+            <p class="doc-description">{{ doc.description or 'Tài liệu tham khảo' }}</p>
+            <div class="doc-meta">
+                <span class="doc-type-badge other">{{ doc.type|upper }}</span>
+                <span class="doc-date">{{ doc.created_at[:10] if doc.created_at else 'N/A' }}</span>
+            </div>
+            <a href="{{ doc.url }}" target="_blank" class="btn btn-secondary btn-block">
+                🔗 Xem tài liệu
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📚</div>
+        <h3>Chưa có tài liệu nào</h3>
+        <p>Kho tài liệu đang được cập nhật. Vui lòng quay lại sau!</p>
+        {% if session.role == 'teacher' %}
+        <a href="{{ url_for('add_document') }}" class="btn btn-primary">Thêm tài liệu đầu tiên</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function filterDocs(type) {
+    const cards = document.querySelectorAll('.document-card');
+    const buttons = document.querySelectorAll('.filter-btn');
+    
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    cards.forEach(card => {
+        if (type === 'all') {
+            card.style.display = 'block';
+        } else {
+            if (card.dataset.type === type) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        }
+    });
+}
+</script>
+
+<style>
+.page-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.filters {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 20px;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.filter-btn:hover {
+    border-color: #007bff;
+    color: #007bff;
+}
+
+.filter-btn.active {
+    background: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.documents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.document-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.document-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.doc-icon {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.document-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    color: #333;
+    min-height: 50px;
+}
+
+.doc-description {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 15px;
+    flex-grow: 1;
+    min-height: 40px;
+}
+
+.doc-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.doc-type-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.doc-type-badge.youtube {
+    background: #ff000020;
+    color: #ff0000;
+}
+
+.doc-type-badge.drive {
+    background: #4285f420;
+    color: #4285f4;
+}
+
+.doc-type-badge.other {
+    background: #6c757d20;
+    color: #6c757d;
+}
+
+.doc-date {
+    font-size: 12px;
+    color: #999;
+}
+
+.btn-block {
+    width: 100%;
+    text-align: center;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 12px;
+    border: 2px dashed #ddd;
+}
+
+.empty-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.empty-state p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+}
+
+@media (max-width: 768px) {
+    .documents-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

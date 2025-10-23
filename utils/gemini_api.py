@@ -1,0 +1,115 @@
+import google.generativeai as genai
+import re
+
+# Cấu hình API key
+GEMINI_API_KEY = "AIzaSyAI64Hvq8NFVw_jQ7CKGnkBBHubLjH8sWo"
+genai.configure(api_key=GEMINI_API_KEY)
+
+def remove_markdown_formatting(text):
+    """
+    Loại bỏ các ký tự định dạng Markdown
+    """
+    # Loại bỏ # (headers)
+    text = re.sub(r'#+\s*', '', text)
+    
+    # Loại bỏ ** (bold) và * (italic)
+    text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
+    text = re.sub(r'\*(.+?)\*', r'\1', text)
+    
+    # Loại bỏ __ (bold) và _ (italic)
+    text = re.sub(r'__(.+?)__', r'\1', text)
+    text = re.sub(r'_(.+?)_', r'\1', text)
+    
+    # Loại bỏ ``` (code blocks)
+    text = re.sub(r'```[\w]*\n?', '', text)
+    text = re.sub(r'```', '', text)
+    
+    # Loại bỏ ` (inline code)
+    text = re.sub(r'`(.+?)`', r'\1', text)
+    
+    return text.strip()
+
+def chat_with_gemini(user_message):
+    """
+    Gửi tin nhắn đến Gemini AI và nhận phản hồi
+    """
+    try:
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        
+        system_prompt = """
+        Bạn là trợ lý AI cho học sinh THPT ôn thi môn Tin học.
+        Nhiệm vụ của bạn là:
+        - Giải đáp thắc mắc về lập trình, thuật toán, cấu trúc dữ liệu
+        - Hướng dẫn học sinh giải bài tập tin học
+        - Giải thích các khái niệm tin học một cách dễ hiểu
+        - Trả lời bằng tiếng Việt, ngắn gọn và rõ ràng
+        
+        QUAN TRỌNG: Trả lời bằng văn bản thuần túy, KHÔNG sử dụng bất kỳ ký tự định dạng nào như:
+        - Dấu # cho tiêu đề
+        - Dấu ** hoặc * cho in đậm/nghiêng
+        - Dấu ``` cho code block
+        - Dấu ` cho inline code
+        Chỉ viết văn bản bình thường, dễ đọc.
+        """
+        
+        full_prompt = f"{system_prompt}\n\nCâu hỏi của học sinh: {user_message}"
+        
+        response = model.generate_content(full_prompt)
+        
+        # Loại bỏ markdown formatting
+        clean_text = remove_markdown_formatting(response.text)
+        
+        return clean_text
+    
+    except Exception as e:
+        return f"Xin lỗi, có lỗi xảy ra: {str(e)}"
+
+def chat_with_context(user_message, chat_history=[]):
+    """
+    Chat với context (lịch sử hội thoại)
+    chat_history: [{'role': 'user', 'content': '...'}, {'role': 'assistant', 'content': '...'}]
+    """
+    try:
+        model = genai.GenerativeModel(
+            'gemini-2.0-flash-exp',
+            generation_config={
+                'temperature': 0.7,
+            },
+            system_instruction="""
+            Bạn là trợ lý AI cho học sinh THPT ôn thi môn Tin học.
+            Trả lời bằng văn bản thuần túy, KHÔNG sử dụng ký tự định dạng Markdown như #, **, *, ```.
+            Chỉ viết văn bản bình thường, dễ đọc.
+            """
+        )
+        
+        # Tạo chat session
+        chat = model.start_chat(history=[])
+        
+        # Thêm history
+        for msg in chat_history:
+            if msg['role'] == 'user':
+                chat.send_message(msg['content'])
+        
+        # Gửi tin nhắn mới
+        response = chat.send_message(user_message)
+        
+        # Loại bỏ markdown formatting
+        clean_text = remove_markdown_formatting(response.text)
+        
+        return clean_text
+    
+    except Exception as e:
+        return f"Xin lỗi, có lỗi xảy ra: {str(e)}"
+
+# Test
+if __name__ == "__main__":
+    print("=== Test chat_with_gemini ===")
+    response1 = chat_with_gemini("Giải thích thuật toán sắp xếp nổi bọt")
+    print(response1)
+    
+    print("\n=== Test chat_with_context ===")
+    history = [
+        {'role': 'user', 'content': 'Độ phức tạp của bubble sort là gì?'}
+    ]
+    response2 = chat_with_context("Còn quick sort thì sao?", history)
+    print(response2)

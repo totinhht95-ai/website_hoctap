@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Trang chủ - Học Tin THPT{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <h1>Chào mừng đến với Hệ thống Học Tin THPT</h1>
+        <p>Nền tảng học tập trực tuyến cho học sinh THPT môn Tin học</p>
+        
+        {% if not session.user_id %}
+        <div class="hero-buttons">
+            <a href="{{ url_for('register') }}" class="btn btn-primary">Đăng ký ngay</a>
+            <a href="{{ url_for('login') }}" class="btn btn-secondary">Đăng nhập</a>
+        </div>
+        {% else %}
+        <div class="hero-buttons">
+            <a href="{{ url_for('courses') }}" class="btn btn-primary">Xem khóa học</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="features container">
+    <h2>Tính năng nổi bật</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <h3>📚 Khóa học đa dạng</h3>
+            <p>Học theo lộ trình từ cơ bản đến nâng cao</p>
+        </div>
+        <div class="feature-card">
+            <h3>📝 Bài tập thực hành</h3>
+            <p>Rèn luyện kỹ năng qua bài tập thực tế</p>
+        </div>
+        <div class="feature-card">
+            <h3>📖 Kho tài liệu</h3>
+            <p>Video bài giảng và tài liệu tham khảo</p>
+        </div>
+        <div class="feature-card">
+            <h3>🤖 Chatbot AI</h3>
+            <p>Hỗ trợ học tập 24/7 bằng AI Gemini</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

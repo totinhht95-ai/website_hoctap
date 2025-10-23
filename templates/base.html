@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Học Tin THPT{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('index') }}" class="logo">🎓 Tin Học THPT</a>
+            <ul class="nav-menu">
+                {% if session.user_id %}
+                    <li><a href="{{ url_for('courses') }}">Khóa học</a></li>
+                    <li><a href="{{ url_for('documents') }}">Tài liệu</a></li>
+                    <li><a href="{{ url_for('exercises') }}">Bài tập</a></li>
+                    <li><a href="{{ url_for('chatbot') }}">Chatbot AI</a></li>
+                    {% if session.role == 'teacher' %}
+                        <li><a href="{{ url_for('teacher_dashboard') }}">Dashboard</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('student_dashboard') }}">Dashboard</a></li>
+                    {% endif %}
+                    <li><span>👤 {{ session.username }}</span></li>
+                    <li><a href="{{ url_for('logout') }}" class="btn-logout">Đăng xuất</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Đăng nhập</a></li>
+                    <li><a href="{{ url_for('register') }}" class="btn-register">Đăng ký</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Học Tin THPT - Hệ thống học tập trực tuyến</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

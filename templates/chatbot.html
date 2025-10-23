@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Chatbot AI - Học Tin THPT{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>🤖 Chatbot AI - Trợ lý học tập</h1>
+    <p class="subtitle">Hỏi đáp với AI Gemini về Tin học THPT</p>
+
+    <div class="chatbot-container">
+        <!-- Khung chat -->
+        <div class="chat-box" id="chatBox">
+            <div class="message bot-message">
+                <strong>AI Assistant:</strong>
+                <p>Xin chào! Tôi là trợ lý AI. Bạn có thể hỏi tôi bất kỳ câu hỏi nào về Tin học THPT. 😊</p>
+            </div>
+        </div>
+
+        <!-- Form nhập tin nhắn -->
+        <div class="chat-input-container">
+            <form id="chatForm" onsubmit="sendMessage(event)">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="Nhập câu hỏi của bạn..." 
+                    autocomplete="off"
+                    required
+                >
+                <button type="submit" class="btn btn-primary">Gửi</button>
+            </form>
+        </div>
+
+        <!-- Gợi ý câu hỏi -->
+        <div class="suggestions">
+            <p><strong>Gợi ý câu hỏi:</strong></p>
+            <button onclick="quickQuestion('Giải thích vòng lặp for trong Python')" class="suggestion-btn">
+                Vòng lặp for trong Python
+            </button>
+            <button onclick="quickQuestion('Sự khác biệt giữa list và tuple')" class="suggestion-btn">
+                List vs Tuple
+            </button>
+            <button onclick="quickQuestion('Cấu trúc dữ liệu Stack là gì?')" class="suggestion-btn">
+                Stack là gì?
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+async function sendMessage(event) {
+    event.preventDefault();
+    
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Hiển thị tin nhắn người dùng
+    addMessage(message, 'user');
+    input.value = '';
+    
+    // Hiển thị loading
+    const loadingId = addMessage('Đang suy nghĩ...', 'bot', true);
+    
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: message})
+        });
+        
+        const data = await response.json();
+        
+        // Xóa loading và hiển thị kết quả
+        removeMessage(loadingId);
+        addMessage(data.response, 'bot');
+        
+    } catch (error) {
+        removeMessage(loadingId);
+        addMessage('Xin lỗi, có lỗi xảy ra. Vui lòng thử lại!', 'bot');
+        console.error('Error:', error);
+    }
+}
+
+function addMessage(text, sender, isLoading = false) {
+    const chatBox = document.getElementById('chatBox');
+    const messageDiv = document.createElement('div');
+    const messageId = 'msg-' + Date.now();
+    
+    messageDiv.id = messageId;
+    messageDiv.className = `message ${sender}-message ${isLoading ? 'loading' : ''}`;
+    
+    if (sender === 'user') {
+        messageDiv.innerHTML = `<strong>Bạn:</strong><p>${text}</p>`;
+    } else {
+        messageDiv.innerHTML = `<strong>AI Assistant:</strong><p>${text}</p>`;
+    }
+    
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    
+    return messageId;
+}
+
+function removeMessage(messageId) {
+    const message = document.getElementById(messageId);
+    if (message) {
+        message.remove();
+    }
+}
+
+function quickQuestion(question) {
+    document.getElementById('messageInput').value = question;
+    document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+}
+</script>
+
+<style>
+.chatbot-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.chat-box {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    height: 500px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+    margin-bottom: 20px;
+}
+
+.message {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.user-message {
+    background-color: #007bff;
+    color: white;
+    text-align: right;
+    margin-left: 20%;
+}
+
+.bot-message {
+    background-color: white;
+    border: 1px solid #ddd;
+    margin-right: 20%;
+}
+
+.loading {
+    opacity: 0.6;
+    font-style: italic;
+}
+
+.chat-input-container form {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input-container input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.suggestions {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+}
+
+.suggestion-btn {
+    display: inline-block;
+    margin: 5px;
+    padding: 8px 15px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.suggestion-btn:hover {
+    background-color: #007bff;
+    color: white;
+}
+</style>
+{% endblock %}
