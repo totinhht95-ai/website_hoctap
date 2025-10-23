@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>📤 Bài nộp của học sinh</h1>
+        <h1> Bài nộp của học sinh</h1>
         <p class="subtitle">Xem và quản lý bài tập học sinh đã nộp</p>
     </div>
     
@@ -26,7 +26,7 @@
         </div>
 
         <div class="filters-section">
-            <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm theo tên học sinh hoặc khóa học..." onkeyup="filterSubmissions()">
+            <input type="text" id="searchInput" placeholder=" Tìm kiếm theo tên học sinh hoặc khóa học..." onkeyup="filterSubmissions()">
             <select id="courseFilter" onchange="filterSubmissions()">
                 <option value="">Tất cả khóa học</option>
                 {% for course in submissions|map(attribute='course_title')|unique %}
@@ -50,8 +50,8 @@
                 </div>
                 
                 <div class="submission-meta">
-                    <span>📝 Bài: {{ sub.exercise_id }}</span>
-                    <span>🕒 {{ sub.submitted_at[:19] }}</span>
+                    <span> Bài: {{ sub.exercise_id }}</span>
+                    <span> {{ sub.submitted_at[:19] }}</span>
                 </div>
                 
                 <div class="answers-section">
@@ -72,10 +72,10 @@
                 
                 <div class="action-buttons">
                     <button onclick="viewDetail('{{ sub.student_name }}', '{{ sub.course_title }}', '{{ sub.exercise_id }}')" class="btn btn-primary btn-small">
-                        👁️ Xem chi tiết
+                         Xem chi tiết
                     </button>
                     <button onclick="gradeSubmission('{{ sub.student_name }}', '{{ sub.exercise_id }}')" class="btn btn-success btn-small">
-                        ✏️ Chấm điểm
+                         Chấm điểm
                     </button>
                 </div>
             </div>

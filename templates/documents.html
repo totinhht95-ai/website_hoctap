@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>📚 Kho tài liệu học tập</h1>
+        <h1> Kho tài liệu học tập</h1>
         <p class="subtitle">Video bài giảng và tài liệu tham khảo</p>
         
         {% if session.role == 'teacher' %}
@@ -15,7 +15,7 @@
 
     <div class="filters">
         <button class="filter-btn active" onclick="filterDocs('all')">Tất cả</button>
-        <button class="filter-btn" onclick="filterDocs('youtube')">🎥 YouTube</button>
+        <button class="filter-btn" onclick="filterDocs('youtube')"> YouTube</button>
         <button class="filter-btn" onclick="filterDocs('drive')">📁 Google Drive</button>
         <button class="filter-btn" onclick="filterDocs('other')">📄 Khác</button>
     </div>
@@ -32,7 +32,7 @@
                 <span class="doc-date">{{ doc.created_at[:10] if doc.created_at else 'N/A' }}</span>
             </div>
             <a href="{{ doc.url }}" target="_blank" class="btn btn-primary btn-block">
-                ▶️ Xem video
+                ▶ Xem video
             </a>
         </div>
         {% endfor %}
@@ -47,14 +47,14 @@
                 <span class="doc-date">{{ doc.created_at[:10] if doc.created_at else 'N/A' }}</span>
             </div>
             <a href="{{ doc.url }}" target="_blank" class="btn btn-success btn-block">
-                📥 Tải tài liệu
+                 Tải tài liệu
             </a>
         </div>
         {% endfor %}
 
         {% for doc in other_docs %}
         <div class="document-card" data-type="other">
-            <div class="doc-icon other-icon">📄</div>
+            <div class="doc-icon other-icon"></div>
             <h3>{{ doc.title }}</h3>
             <p class="doc-description">{{ doc.description or 'Tài liệu tham khảo' }}</p>
             <div class="doc-meta">
@@ -69,7 +69,7 @@
     </div>
     {% else %}
     <div class="empty-state">
-        <div class="empty-icon">📚</div>
+        <div class="empty-icon"></div>
         <h3>Chưa có tài liệu nào</h3>
         <p>Kho tài liệu đang được cập nhật. Vui lòng quay lại sau!</p>
         {% if session.role == 'teacher' %}

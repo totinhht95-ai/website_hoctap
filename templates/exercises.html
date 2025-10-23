@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container">
-    <h1>📝 Bài tập thực hành</h1>
+    <h1> Bài tập thực hành</h1>
     <p class="subtitle">Luyện tập và nâng cao kỹ năng lập trình</p>
 
     {% if exercises %}
@@ -14,25 +14,25 @@
             <div class="exercise-header">
                 <div>
                     <h3>{{ ex.course_title }} - {{ ex.lesson_title }}</h3>
-                    <p class="exercise-course">📚 Khóa học: {{ ex.course_title }}</p>
+                    <p class="exercise-course"> Khóa học: {{ ex.course_title }}</p>
                 </div>
                 <span class="question-count">{{ ex.questions|length }} câu hỏi</span>
             </div>
             
             <div class="exercise-meta">
-                <span>📖 Bài: {{ ex.lesson_title }}</span>
+                <span> Bài: {{ ex.lesson_title }}</span>
             </div>
             
             <button onclick="openExercise('{{ ex.course_id }}', '{{ ex.lesson_id }}', {{ ex.questions|tojson|safe }})" 
                     class="btn btn-primary">
-                📝 Làm bài
+                 Làm bài
             </button>
         </div>
         {% endfor %}
     </div>
     {% else %}
     <div class="empty-state">
-        <div class="empty-icon">📝</div>
+        <div class="empty-icon"></div>
         <h3>Chưa có bài tập nào</h3>
         <p>Các khóa học chưa có bài tập. Hãy tham gia khóa học để làm bài tập!</p>
         <a href="{{ url_for('courses') }}" class="btn btn-primary">Xem khóa học</a>
@@ -41,7 +41,7 @@
 
     {% if submissions and submissions|length > 0 %}
     <div class="submissions-section">
-        <h2>📤 Bài đã nộp</h2>
+        <h2> Bài đã nộp</h2>
         <div class="submissions-list">
             {% for sub in submissions %}
             <div class="submission-item">
@@ -180,7 +180,7 @@ document.getElementById('exerciseForm').addEventListener('submit', async functio
                 const isPassed = data.score >= 70;
                 resultSection.innerHTML = `
                     <div class="result-card ${isPassed ? 'result-pass' : 'result-fail'}">
-                        <div class="result-icon">${isPassed ? '🎉' : '💪'}</div>
+                        <div class="result-icon">${isPassed ? '' : ''}</div>
                         <h3>Kết quả bài làm</h3>
                         <div class="score-display">
                             <div class="score-number">${data.score}%</div>

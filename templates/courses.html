@@ -5,12 +5,12 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>📚 Danh sách khóa học</h1>
+        <h1> Danh sách khóa học</h1>
         <p class="subtitle">Khám phá và tham gia các khóa học lập trình</p>
     </div>
     
     <div class="filters">
-        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm khóa học..." onkeyup="searchCourses()">
+        <input type="text" id="searchInput" placeholder=" Tìm kiếm khóa học..." onkeyup="searchCourses()">
         <select id="sortSelect" onchange="sortCourses()">
             <option value="default">Sắp xếp mặc định</option>
             <option value="name-asc">Tên: A → Z</option>
@@ -29,7 +29,7 @@
             {% for course in courses %}
             <div class="course-card" data-name="{{ course.title|lower }}" data-lessons="{{ course.lessons|length }}">
                 <div class="course-image">
-                    <div class="course-icon">💻</div>
+                    <div class="course-icon"></div>
                 </div>
                 
                 <div class="course-content">
@@ -38,11 +38,11 @@
                     
                     <div class="course-meta">
                         <div class="meta-item">
-                            <span class="meta-icon">👨‍🏫</span>
+                            <span class="meta-icon"></span>
                             <span>{{ course.teacher_name }}</span>
                         </div>
                         <div class="meta-item">
-                            <span class="meta-icon">📖</span>
+                            <span class="meta-icon"></span>
                             <span>{{ course.lessons|length }} bài học</span>
                         </div>
                     </div>
@@ -58,7 +58,7 @@
         </div>
     {% else %}
         <div class="empty-state">
-            <div class="empty-icon">📚</div>
+            <div class="empty-icon"></div>
             <h3>Chưa có khóa học nào</h3>
             <p>Hệ thống đang được cập nhật. Vui lòng quay lại sau!</p>
         </div>

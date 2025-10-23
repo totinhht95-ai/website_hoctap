@@ -5,28 +5,28 @@
 {% block content %}
 <div class="container dashboard">
     <div class="welcome-section">
-        <h1>Chào mừng, {{ username }}! 👋</h1>
+        <h1>Chào mừng, {{ username }}! </h1>
         <p class="subtitle">Tiếp tục hành trình học tập của bạn</p>
     </div>
 
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon">📚</div>
+            <div class="stat-icon"></div>
             <h3>{{ courses|length }}</h3>
             <p>Khóa học khả dụng</p>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">🎯</div>
+            <div class="stat-icon"></div>
             <h3>{{ enrolled_courses|length }}</h3>
             <p>Đang học</p>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">✅</div>
+            <div class="stat-icon"></div>
             <h3>{{ enrolled_courses|selectattr('percentage', 'equalto', 100)|list|length }}</h3>
             <p>Đã hoàn thành</p>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">📊</div>
+            <div class="stat-icon"></div>
             <h3>{% if enrolled_courses|length > 0 %}{{ ((enrolled_courses|sum(attribute='percentage'))/enrolled_courses|length)|round(1) }}{% else %}0{% endif %}%</h3>
             <p>Tiến độ trung bình</p>
         </div>
@@ -34,7 +34,7 @@
 
     {% if enrolled_courses %}
     <section class="dashboard-section">
-        <h2>📖 Khóa học của bạn</h2>
+        <h2> Khóa học của bạn</h2>
         <div class="courses-grid">
             {% for item in enrolled_courses %}
             <div class="course-card enrolled">
@@ -70,7 +70,7 @@
 
     <section class="dashboard-section">
         <div class="section-header">
-            <h2>🔍 Khám phá khóa học</h2>
+            <h2> Khám phá khóa học</h2>
             <a href="{{ url_for('courses') }}" class="btn btn-secondary btn-small">Xem tất cả →</a>
         </div>
         
@@ -82,7 +82,7 @@
                 <p class="course-description">{{ course.description[:80] }}{% if course.description|length > 80 %}...{% endif %}</p>
                 
                 <div class="course-meta">
-                    <span>📚 {{ course.lessons|length }} bài học</span>
+                    <span> {{ course.lessons|length }} bài học</span>
                 </div>
                 
                 <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-outline btn-block">
@@ -97,20 +97,20 @@
     </section>
 
     <section class="dashboard-section quick-actions-section">
-        <h2>⚡ Truy cập nhanh</h2>
+        <h2> Truy cập nhanh</h2>
         <div class="quick-actions-grid">
             <a href="{{ url_for('documents') }}" class="quick-action-card">
-                <div class="quick-icon">📚</div>
+                <div class="quick-icon"></div>
                 <h4>Kho tài liệu</h4>
                 <p>Video và tài liệu học tập</p>
             </a>
             <a href="{{ url_for('exercises') }}" class="quick-action-card">
-                <div class="quick-icon">📝</div>
+                <div class="quick-icon"></div>
                 <h4>Bài tập</h4>
                 <p>Luyện tập thực hành</p>
             </a>
             <a href="{{ url_for('chatbot') }}" class="quick-action-card">
-                <div class="quick-icon">🤖</div>
+                <div class="quick-icon"></div>
                 <h4>Chatbot AI</h4>
                 <p>Hỏi đáp với AI</p>
             </a>

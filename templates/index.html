@@ -4,9 +4,10 @@
 
 {% block content %}
 <div class="hero">
-    <div class="container">
-        <h1>Chào mừng đến với Hệ thống Học Tin THPT</h1>
-        <p>Nền tảng học tập trực tuyến cho học sinh THPT môn Tin học</p>
+    <div class="hero-overlay"></div>
+    <div class="container hero-content">
+        <h1 class="hero-title">Chào mừng đến với Hệ thống Học Tin THPT</h1>
+        <p class="hero-subtitle">Nền tảng học tập trực tuyến cho học sinh THPT môn Tin học</p>
         
         {% if not session.user_id %}
         <div class="hero-buttons">
@@ -21,25 +22,215 @@
     </div>
 </div>
 
-<div class="features container">
-    <h2>Tính năng nổi bật</h2>
-    <div class="features-grid">
-        <div class="feature-card">
-            <h3>📚 Khóa học đa dạng</h3>
-            <p>Học theo lộ trình từ cơ bản đến nâng cao</p>
-        </div>
-        <div class="feature-card">
-            <h3>📝 Bài tập thực hành</h3>
-            <p>Rèn luyện kỹ năng qua bài tập thực tế</p>
-        </div>
-        <div class="feature-card">
-            <h3>📖 Kho tài liệu</h3>
-            <p>Video bài giảng và tài liệu tham khảo</p>
-        </div>
-        <div class="feature-card">
-            <h3>🤖 Chatbot AI</h3>
-            <p>Hỗ trợ học tập 24/7 bằng AI Gemini</p>
+<div class="features-section">
+    <div class="container">
+        <h2 class="section-title">Tính năng nổi bật</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"></div>
+                <h3 class="feature-title">Khóa học đa dạng</h3>
+                <p class="feature-description">Học theo lộ trình từ cơ bản đến nâng cao</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"></div>
+                <h3 class="feature-title">Bài tập thực hành</h3>
+                <p class="feature-description">Rèn luyện kỹ năng qua bài tập thực tế</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"></div>
+                <h3 class="feature-title">Kho tài liệu</h3>
+                <p class="feature-description">Video bài giảng và tài liệu tham khảo</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"></div>
+                <h3 class="feature-title">Chatbot AI</h3>
+                <p class="feature-description">Hỗ trợ học tập 24/7 bằng AI Gemini</p>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+.hero {
+    position: relative;
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%);
+    padding: 120px 0;
+    text-align: center;
+    overflow: hidden;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="none"/><circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/></svg>');
+    opacity: 0.3;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: rgba(255,255,255,0.95);
+    margin-bottom: 40px;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.btn {
+    padding: 14px 32px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background: white;
+    color: #1e3a8a;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+}
+
+.btn-secondary:hover {
+    background: white;
+    color: #1e3a8a;
+    transform: translateY(-3px);
+}
+
+.features-section {
+    padding: 80px 0;
+    background: linear-gradient(to bottom, #f0f9ff 0%, #ffffff 100%);
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 60px;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #06b6d4);
+    margin: 20px auto 0;
+    border-radius: 2px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(59,130,246,0.2);
+    border-color: rgba(59,130,246,0.3);
+}
+
+.feature-icon {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.1);
+}
+
+.feature-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+.feature-description {
+    font-size: 1rem;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+</style>
 {% endblock %}

@@ -5,28 +5,28 @@
 {% block content %}
 <div class="container dashboard">
     <div class="welcome-section">
-        <h1>Chào mừng, Giáo viên {{ username }}! 👨‍🏫</h1>
+        <h1>Chào mừng, Giáo viên {{ username }}! </h1>
         <p class="subtitle">Quản lý khóa học và theo dõi tiến độ học sinh</p>
     </div>
 
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon">📚</div>
+            <div class="stat-icon"></div>
             <h3>{{ courses|length }}</h3>
             <p>Khóa học của bạn</p>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">👥</div>
+            <div class="stat-icon"></div>
             <h3>{{ courses|sum(attribute='students_enrolled') }}</h3>
             <p>Tổng học sinh</p>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">📖</div>
+            <div class="stat-icon"></div>
             <h3>{{ courses|sum(attribute='total_lessons') }}</h3>
             <p>Tổng bài học</p>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">⭐</div>
+            <div class="stat-icon"></div>
             <h3>{{ courses|selectattr('students_enrolled', 'greaterthan', 0)|list|length }}</h3>
             <p>Khóa đang hoạt động</p>
         </div>
@@ -34,7 +34,7 @@
 
     <section class="dashboard-section">
         <div class="section-header">
-            <h2>📚 Khóa học của bạn</h2>
+            <h2> Khóa học của bạn</h2>
             <a href="{{ url_for('create_course') }}" class="btn btn-primary">
                 ➕ Tạo khóa học mới
             </a>
@@ -57,7 +57,7 @@
                 
                 <div class="course-stats">
                     <div class="stat-item">
-                        <span class="stat-icon-small">📖</span>
+                        <span class="stat-icon-small"></span>
                         <span>{{ item.total_lessons }} bài học</span>
                     </div>
                     <div class="stat-item">
@@ -68,13 +68,13 @@
                 
                 <div class="course-actions">
                     <a href="{{ url_for('course_detail', course_id=item.course.id) }}" class="btn btn-outline btn-small">
-                        👁️ Xem
+                         Xem
                     </a>
                     <a href="{{ url_for('edit_course', course_id=item.course.id) }}" class="btn btn-secondary btn-small">
-                        ✏️ Sửa
+                         Sửa
                     </a>
                     <button onclick="deleteCourse('{{ item.course.id }}', '{{ item.course.title }}')" class="btn btn-danger btn-small">
-                        🗑️ Xóa
+                         Xóa
                     </button>
                 </div>
             </div>
@@ -82,7 +82,7 @@
         </div>
         {% else %}
         <div class="empty-state">
-            <div class="empty-icon">📚</div>
+            <div class="empty-icon"></div>
             <h3>Bạn chưa tạo khóa học nào</h3>
             <p>Hãy tạo khóa học đầu tiên để bắt đầu giảng dạy!</p>
             <a href="{{ url_for('create_course') }}" class="btn btn-primary btn-large">
@@ -94,19 +94,19 @@
 
     <section class="dashboard-section">
         <div class="section-header">
-            <h2>📊 Quản lý học sinh</h2>
+            <h2> Quản lý học sinh</h2>
         </div>
         
         <div class="management-grid">
             <a href="{{ url_for('students_progress') }}" class="management-card">
-                <div class="management-icon">📈</div>
+                <div class="management-icon"></div>
                 <h4>Tiến độ học sinh</h4>
                 <p>Xem chi tiết tiến độ học tập của từng học sinh</p>
                 <span class="arrow">→</span>
             </a>
             
             <a href="{{ url_for('view_submissions') }}" class="management-card">
-                <div class="management-icon">📝</div>
+                <div class="management-icon"></div>
                 <h4>Bài nộp</h4>
                 <p>Xem và chấm điểm bài tập học sinh đã nộp</p>
                 <span class="arrow">→</span>

@@ -8,8 +8,8 @@
         <h1>{{ course.title }}</h1>
         <p class="course-description">{{ course.description }}</p>
         <div class="course-meta">
-            <span>👨‍🏫 Giáo viên: <strong>{{ course.teacher_name }}</strong></span>
-            <span>📚 Số bài học: <strong>{{ course.lessons|length }}</strong></span>
+            <span>👨 Giáo viên: <strong>{{ course.teacher_name }}</strong></span>
+            <span> Số bài học: <strong>{{ course.lessons|length }}</strong></span>
             <span>✓ Đã hoàn thành: <strong>{{ completed_lessons|length }}/{{ course.lessons|length }}</strong></span>
         </div>
         
@@ -20,7 +20,7 @@
         {% endif %}
     </div>
     
-    <h2>📖 Danh sách bài học</h2>
+    <h2> Danh sách bài học</h2>
     
     {% if course.lessons %}
         {% for lesson in course.lessons %}
@@ -52,14 +52,14 @@
             {% if lesson.document_url %}
             <div class="document-link">
                 <a href="{{ lesson.document_url }}" target="_blank" class="btn btn-secondary">
-                    📄 Tải tài liệu
+                     Tải tài liệu
                 </a>
             </div>
             {% endif %}
             
             {% if lesson.questions %}
             <div class="questions-section">
-                <h4>📝 Câu hỏi kiểm tra ({{ lesson.questions|length }} câu)</h4>
+                <h4> Câu hỏi kiểm tra ({{ lesson.questions|length }} câu)</h4>
                 <form class="question-form" id="form_{{ lesson.id }}">
                     {% for q in lesson.questions %}
                     {% set question_idx = loop.index0 %}
@@ -92,7 +92,7 @@
                         <button type="button" 
                                 onclick="submitAnswers('{{ course.id }}', '{{ lesson.id }}')" 
                                 class="btn btn-primary">
-                            📤 Nộp bài
+                             Nộp bài
                         </button>
                         
                         {% if lesson.id not in completed_lessons %}
@@ -220,7 +220,7 @@ async function submitAnswers(courseId, lessonId) {
                     <div class="result-card ${data.score >= 70 ? 'result-pass' : 'result-fail'}">
                         <h4>Kết quả: ${data.score}%</h4>
                         <p>Số câu đúng: <strong>${data.correct}/${data.total}</strong></p>
-                        <p>${data.score >= 70 ? '🎉 Chúc mừng! Bạn đã đạt yêu cầu.' : '💪 Cố gắng lên! Hãy xem lại bài học.'}</p>
+                        <p>${data.score >= 70 ? '🎉 Chúc mừng! Bạn đã đạt yêu cầu.' : ' Cố gắng lên! Hãy xem lại bài học.'}</p>
                     </div>
                 `;
                 

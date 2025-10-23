@@ -4,12 +4,12 @@
 
 {% block content %}
 <div class="container">
-    <h1>{% if edit_mode %}✏️ Chỉnh sửa{% else %}➕ Tạo{% endif %} khóa học</h1>
+    <h1>{% if edit_mode %} Chỉnh sửa{% else %}➕ Tạo{% endif %} khóa học</h1>
     <p class="subtitle">Tạo khóa học với video, tài liệu và câu hỏi kiểm tra</p>
     
     <form id="courseForm">
         <div class="form-section">
-            <h3>📚 Thông tin khóa học</h3>
+            <h3> Thông tin khóa học</h3>
             
             <div class="form-group">
                 <label for="title">Tên khóa học: <span class="required">*</span></label>
@@ -25,7 +25,7 @@
         
         <div class="form-section">
             <div class="section-header">
-                <h3>📖 Bài học</h3>
+                <h3> Bài học</h3>
                 <button type="button" onclick="addLesson()" class="btn btn-primary btn-small">
                     + Thêm bài học
                 </button>
@@ -63,9 +63,9 @@ function addLesson(existingData = null) {
     lessonDiv.className = 'lesson-form';
     lessonDiv.innerHTML = `
         <div class="lesson-header">
-            <h4>📝 Bài học ${lessonCount}</h4>
+            <h4> Bài học ${lessonCount}</h4>
             <button type="button" onclick="removeLesson(this)" class="btn btn-danger btn-small">
-                🗑️ Xóa
+                 Xóa
             </button>
         </div>
         
