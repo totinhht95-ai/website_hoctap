@@ -384,7 +384,6 @@ def submit_exercise():
         return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'})
 
 
-# CHỈNH SỬA: Route documents mới với filter theo lớp và loại tài liệu
 @app.route('/documents')
 @login_required
 def documents():
@@ -394,15 +393,11 @@ def documents():
     
     docs = db.get_all_documents()
     
-    # Lọc theo lớp nếu có
     if grade_filter != 'all':
         docs = [d for d in docs if d.get('grade') == grade_filter]
-    
-    # Lọc theo loại tài liệu nếu có
     if type_filter != 'all':
         docs = [d for d in docs if d.get('doc_type') == type_filter]
     
-    # Phân loại tài liệu theo lớp
     docs_by_grade = {
         '10': [d for d in docs if d.get('grade') == '10'],
         '11': [d for d in docs if d.get('grade') == '11'],
@@ -415,7 +410,7 @@ def documents():
                          current_type=type_filter)
 
 
-# CHỈNH SỬA: Route thêm tài liệu mới với các trường lớp và loại tài liệu
+
 @app.route('/teacher/add_document', methods=['GET', 'POST'])
 @teacher_required
 def add_document():
@@ -433,7 +428,6 @@ def add_document():
             if not data.get('doc_type'):
                 return jsonify({'success': False, 'message': 'Vui lòng chọn loại tài liệu'})
             
-            # Tự động xác định loại link (youtube, drive, other)
             if 'youtube.com' in data['url'] or 'youtu.be' in data['url']:
                 data['link_type'] = 'youtube'
             elif 'drive.google.com' in data['url']:
@@ -581,20 +575,15 @@ def internal_error(error):
 
 
 ########################
-# ===== THÊM VÀO FILE app.py =====
-
-# IMPORT THÊM: Cần import json để đọc file JSON
-# -*- coding: utf-8 -*-
-# THÊM VÀO FILE app.py
+#
 @app.route('/tracnghiem/lam-bai/<grade>/<exam_id>')
 @login_required
 @student_required
 def lam_bai_tracnghiem(grade, exam_id):
     """
     Hiển thị đề trắc nghiệm để học sinh làm bài
-    ✅ Fix: Logic thời gian chặt chẽ, xử lý session an toàn
+     Fix: Logic thời gian chặt chẽ, xử lý session an toàn
     """
-    # 1. VALIDATE GRADE
     if grade not in ['10', '11', '12']:
         flash('Lớp không hợp lệ', 'danger')
         return redirect(url_for('tracnghiem'))
@@ -602,7 +591,6 @@ def lam_bai_tracnghiem(grade, exam_id):
     json_file = f'data/lop{grade}.json'
     
     try:
-        # 2. ĐỌC FILE VÀ TÌM ĐỀ THI
         with open(json_file, 'r', encoding='utf-8') as f:
             exams_data = json.load(f)
             exams = exams_data.get('exams', [])
@@ -613,66 +601,51 @@ def lam_bai_tracnghiem(grade, exam_id):
                 flash('Đề thi không tồn tại', 'danger')
                 return redirect(url_for('tracnghiem'))
             
-            # Lấy thời gian làm bài (mặc định 15 phút)
             time_limit = exam.get('time_limit', 15)
             
-            # QUAN TRỌNG: Đảm bảo time_limit hợp lệ
             if not isinstance(time_limit, (int, float)) or time_limit <= 0:
                 time_limit = 15
                 print(f"Warning: Invalid time_limit in exam {exam_id}, using default 15 minutes")
             
-            # 3. XỬ LÝ SESSION THỜI GIAN
             session_key = f'exam_start_{grade}_{exam_id}'
             reset_param = request.args.get('reset', 'no')
             
-            # Đảm bảo session permanent để không bị mất
             if not session.permanent:
                 session.permanent = True
                 session.modified = True
             
-            # 4. TÍNH TOÁN THỜI GIAN CÒN LẠI
+
             should_create_new_session = False
             remaining_time = time_limit * 60  # Mặc định
             
-            # Trường hợp 1: Yêu cầu reset
             if reset_param == 'yes':
                 should_create_new_session = True
                 print(f"Reset session for exam {exam_id}")
             
-            # Trường hợp 2: Chưa có session
             elif session_key not in session:
                 should_create_new_session = True
                 print(f"New session for exam {exam_id}")
-            
-            # Trường hợp 3: Có session - tính thời gian còn lại
             else:
                 try:
                     start_time_str = session.get(session_key)
-                    
-                    # Validate start_time
                     if not start_time_str or not isinstance(start_time_str, str):
                         raise ValueError("Invalid start_time format")
                     
                     start_time = datetime.fromisoformat(start_time_str)
                     current_time = datetime.now()
                     
-                    # Tính elapsed time
                     elapsed_seconds = (current_time - start_time).total_seconds()
                     
-                    # CRITICAL: Validate elapsed_seconds
                     if elapsed_seconds < 0:
-                        # Thời gian bắt đầu ở tương lai?! -> Reset
                         print(f"ERROR: Negative elapsed time for exam {exam_id}")
                         should_create_new_session = True
                     elif elapsed_seconds > (time_limit * 60 * 2):
-                        # Quá thời gian gấp đôi -> Session cũ, reset
                         print(f"WARNING: Session too old for exam {exam_id}")
                         should_create_new_session = True
                     else:
-                        # Tính remaining time
                         remaining_time = (time_limit * 60) - elapsed_seconds
                         
-                        # CRITICAL CHECK: Nếu hết giờ
+
                         if remaining_time <= 0:
                             flash('⏰ Đã hết thời gian làm bài! Vui lòng làm lại từ đầu.', 'warning')
                             # Xóa session cũ
@@ -683,11 +656,9 @@ def lam_bai_tracnghiem(grade, exam_id):
                         print(f"Exam {exam_id}: {int(remaining_time)}s remaining")
                 
                 except (ValueError, KeyError, TypeError, AttributeError) as e:
-                    # Bất kỳ lỗi nào với session -> Tạo mới
                     print(f"Session error for exam {exam_id}: {e}")
                     should_create_new_session = True
             
-            # 5. TẠO SESSION MỚI NẾU CẦN
             if should_create_new_session:
                 current_time = datetime.now()
                 session[session_key] = current_time.isoformat()
@@ -696,12 +667,11 @@ def lam_bai_tracnghiem(grade, exam_id):
                 remaining_time = time_limit * 60
                 print(f"Created new session for exam {exam_id}, expires in {time_limit} minutes")
             
-            # 6. FINAL VALIDATION
-            # Đảm bảo remaining_time luôn dương và hợp lệ
+
             remaining_time = max(1, min(remaining_time, time_limit * 60))
             remaining_time = int(remaining_time)  # Convert to integer
             
-            # 7. LOG (cho debug)
+            # . LOG (cho debug)
             print(f"""
             ===== EXAM SESSION INFO =====
             Exam: {exam_id} | Grade: {grade}
@@ -712,7 +682,7 @@ def lam_bai_tracnghiem(grade, exam_id):
             ============================
             """)
             
-            # 8. RENDER TEMPLATE
+
             return render_template('baitap.html',
                                  exam=exam,
                                  grade=grade,
@@ -737,7 +707,7 @@ def lam_bai_tracnghiem(grade, exam_id):
         return redirect(url_for('tracnghiem'))
 
 
-# ===== BONUS: THÊM ROUTE KIỂM TRA THỜI GIAN REAL-TIME =====
+
 @app.route('/api/tracnghiem/check-time/<grade>/<exam_id>')
 @login_required
 @student_required
@@ -748,7 +718,6 @@ def api_check_exam_time(grade, exam_id):
     """
     session_key = f'exam_start_{grade}_{exam_id}'
     
-    # Kiểm tra session tồn tại
     if session_key not in session:
         return jsonify({
             'success': False,
@@ -758,7 +727,6 @@ def api_check_exam_time(grade, exam_id):
         })
     
     try:
-        # Đọc thông tin đề thi
         json_file = f'data/lop{grade}.json'
         with open(json_file, 'r', encoding='utf-8') as f:
             exams_data = json.load(f)
@@ -775,7 +743,7 @@ def api_check_exam_time(grade, exam_id):
             
             time_limit = exam.get('time_limit', 15)
         
-        # Tính thời gian còn lại
+
         start_time = datetime.fromisoformat(session[session_key])
         elapsed_seconds = (datetime.now() - start_time).total_seconds()
         remaining_seconds = (time_limit * 60) - elapsed_seconds
@@ -819,7 +787,7 @@ def api_check_exam_time(grade, exam_id):
         })
 
 
-# ===== THÊM: VALIDATE THỜI GIAN KHI NỘP BÀI =====
+
 @app.route('/tracnghiem')
 @login_required
 @student_required
@@ -844,7 +812,6 @@ def tracnghiem():
                     exams_data = json.load(f)
                     exams = exams_data.get('exams', [])
                     
-                    # Thêm thông tin grade vào mỗi exam
                     for exam in exams:
                         exam['grade'] = grade
                     
@@ -858,7 +825,7 @@ def tracnghiem():
                 print(f"✗ File {json_file} bị lỗi định dạng")
                 continue
         
-        # Nhóm đề thi theo khối
+
         exams_by_grade = {
             '10': [e for e in all_exams if e['grade'] == '10'],
             '11': [e for e in all_exams if e['grade'] == '11'],
@@ -901,7 +868,6 @@ def nop_bai_tracnghiem():
         exam_id = data.get('exam_id')
         answers = data.get('answers', {})
         
-        # Validate input
         if not grade or not exam_id:
             return jsonify({
                 'success': False,
@@ -914,7 +880,6 @@ def nop_bai_tracnghiem():
                 'message': 'Lớp không hợp lệ'
             }), 400
         
-        # ✅ KIỂM TRA THỜI GIAN CÒN LẠI
         session_key = f'exam_start_{grade}_{exam_id}'
         
         if session_key not in session:
@@ -923,7 +888,6 @@ def nop_bai_tracnghiem():
                 'message': '⚠️ Session đã hết hạn. Vui lòng làm lại.'
             }), 403
         
-        # Đọc file JSON
         json_file = f'data/lop{grade}.json'
         with open(json_file, 'r', encoding='utf-8') as f:
             exams_data = json.load(f)
@@ -938,7 +902,6 @@ def nop_bai_tracnghiem():
             
             time_limit = exam.get('time_limit', 15)
             
-            # ✅ VALIDATE: Kiểm tra có hết giờ không
             try:
                 start_time = datetime.fromisoformat(session[session_key])
                 elapsed_seconds = (datetime.now() - start_time).total_seconds()
@@ -958,8 +921,6 @@ def nop_bai_tracnghiem():
                     'success': False,
                     'message': 'Session không hợp lệ'
                 }), 403
-            
-            # Chấm điểm (code cũ của bạn)
             questions = exam.get('questions', [])
             total_questions = len(questions)
             correct_count = 0
@@ -983,7 +944,7 @@ def nop_bai_tracnghiem():
             
             score = round((correct_count / total_questions) * 10, 2) if total_questions > 0 else 0
             
-            # ✅ Xóa session sau khi nộp thành công
+
             session.pop(session_key, None)
             session.modified = True
             
@@ -998,7 +959,7 @@ def nop_bai_tracnghiem():
                 'correct_count': correct_count,
                 'total_questions': total_questions,
                 'submitted_at': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
-                'time_spent_seconds': int(elapsed_seconds)  # ✅ Lưu thời gian làm bài
+                'time_spent_seconds': int(elapsed_seconds)  # 
             }
             
             try:
@@ -1060,8 +1021,6 @@ def lich_su_tracnghiem():
     """
     try:
         user_id = session.get('user_id')
-        
-        # Đọc file kết quả
         results_file = 'data/exam_results.json'
         
         try:
@@ -1073,7 +1032,7 @@ def lich_su_tracnghiem():
             print("ERROR: exam_results.json bị lỗi định dạng")
             all_results = []
         
-        # Lọc kết quả của user hiện tại và sắp xếp theo thời gian mới nhất
+
         user_results = [r for r in all_results if r.get('user_id') == user_id]
         user_results.sort(key=lambda x: x.get('submitted_at', ''), reverse=True)
         
@@ -1118,7 +1077,7 @@ def ket_qua_tracnghiem(grade, exam_id):
     try:
         user_id = session.get('user_id')
         
-        # Đọc file kết quả để lấy kết quả mới nhất
+
         results_file = 'data/exam_results.json'
         
         try:
@@ -1128,7 +1087,7 @@ def ket_qua_tracnghiem(grade, exam_id):
             flash('Không tìm thấy kết quả bài làm', 'warning')
             return redirect(url_for('tracnghiem'))
         
-        # Tìm kết quả mới nhất của user cho đề thi này
+
         matching_results = [
             r for r in all_results 
             if r.get('user_id') == user_id 
@@ -1140,7 +1099,6 @@ def ket_qua_tracnghiem(grade, exam_id):
             flash('Không tìm thấy kết quả bài làm', 'warning')
             return redirect(url_for('tracnghiem'))
         
-        # Lấy kết quả mới nhất
         result = matching_results[-1]
         
         return render_template('ketqua.html', 

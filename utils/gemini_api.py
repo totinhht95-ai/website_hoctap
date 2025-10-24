@@ -9,22 +9,21 @@ def remove_markdown_formatting(text):
     """
     Loại bỏ các ký tự định dạng Markdown
     """
-    # Loại bỏ # (headers)
+
     text = re.sub(r'#+\s*', '', text)
     
-    # Loại bỏ ** (bold) và * (italic)
+
     text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
     text = re.sub(r'\*(.+?)\*', r'\1', text)
-    
-    # Loại bỏ __ (bold) và _ (italic)
+
     text = re.sub(r'__(.+?)__', r'\1', text)
     text = re.sub(r'_(.+?)_', r'\1', text)
     
-    # Loại bỏ ``` (code blocks)
+
     text = re.sub(r'```[\w]*\n?', '', text)
     text = re.sub(r'```', '', text)
     
-    # Loại bỏ ` (inline code)
+   
     text = re.sub(r'`(.+?)`', r'\1', text)
     
     return text.strip()
@@ -56,7 +55,6 @@ def chat_with_gemini(user_message):
         
         response = model.generate_content(full_prompt)
         
-        # Loại bỏ markdown formatting
         clean_text = remove_markdown_formatting(response.text)
         
         return clean_text
@@ -82,18 +80,18 @@ def chat_with_context(user_message, chat_history=[]):
             """
         )
         
-        # Tạo chat session
+
         chat = model.start_chat(history=[])
         
-        # Thêm history
+
         for msg in chat_history:
             if msg['role'] == 'user':
                 chat.send_message(msg['content'])
         
-        # Gửi tin nhắn mới
+
         response = chat.send_message(user_message)
         
-        # Loại bỏ markdown formatting
+
         clean_text = remove_markdown_formatting(response.text)
         
         return clean_text
