@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 from functools import wraps
 import os
-
+from werkzeug.utils import secure_filename
+import uuid
 from utils.auth import register_user, login_user, get_user_by_id
 from utils.database import Database
 from utils.gemini_api import chat_with_gemini
@@ -1150,7 +1151,398 @@ def ket_qua_tracnghiem(grade, exam_id):
         print(f"ERROR in ket_qua_tracnghiem: {str(e)}")
         flash(f'Lỗi khi hiển thị kết quả: {str(e)}', 'danger')
         return redirect(url_for('tracnghiem'))
-        ####################3
+        ####################
+
+##############
+
+
+UPLOAD_FOLDER = 'static/uploads/forum'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'docx', 'txt', 'zip', 'rar'}
+MAX_FILE_SIZE = 10 * 1024 * 1024
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/forum')
+@login_required
+def forum():
+    search_query = request.args.get('search', '').strip()
+    filter_type = request.args.get('filter', 'all')
+    
+    if search_query:
+        posts = db.search_forum_posts(search_query)
+    elif filter_type == 'my_posts':
+        posts = db.get_forum_posts_by_user(session['user_id'])
+    else:
+        posts = db.get_all_forum_posts()
+    
+    for post in posts:
+        post['created_at_formatted'] = format_datetime(post['created_at'])
+        if post.get('updated_at'):
+            post['updated_at_formatted'] = format_datetime(post['updated_at'])
+    
+    return render_template('forum.html', 
+                         posts=posts,
+                         search_query=search_query,
+                         filter_type=filter_type,
+                         username=session.get('username'))
+
+
+@app.route('/forum/post/<post_id>')
+@login_required
+def forum_post_detail(post_id):
+    post = db.get_forum_post_by_id(post_id)
+    
+    if not post:
+        flash('Bài viết không tồn tại', 'danger')
+        return redirect(url_for('forum'))
+    
+    db.increment_post_views(post_id)
+    
+    comments = db.get_comments_by_post(post_id)
+    
+    post['created_at_formatted'] = format_datetime(post['created_at'])
+    if post.get('updated_at'):
+        post['updated_at_formatted'] = format_datetime(post['updated_at'])
+    
+    for comment in comments:
+        comment['created_at_formatted'] = format_datetime(comment['created_at'])
+    
+    is_author = post['author_id'] == session['user_id']
+    
+    return render_template('forum_post_detail.html',
+                         post=post,
+                         comments=comments,
+                         is_author=is_author,
+                         username=session.get('username'))
+
+
+@app.route('/forum/create', methods=['GET', 'POST'])
+@login_required
+def forum_create_post():
+    if request.method == 'POST':
+        try:
+            title = request.form.get('title', '').strip()
+            content = request.form.get('content', '').strip()
+            tags_str = request.form.get('tags', '').strip()
+            
+            if not title or not content:
+                return jsonify({'success': False, 'message': 'Vui lòng nhập đầy đủ tiêu đề và nội dung'})
+            
+            tags = [tag.strip() for tag in tags_str.split(',') if tag.strip()] if tags_str else []
+            
+            attachments = []
+            if 'files' in request.files:
+                files = request.files.getlist('files')
+                for file in files:
+                    if file and file.filename and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        unique_filename = f"{uuid.uuid4().hex[:8]}_{filename}"
+                        
+                        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+                        file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+                        file.save(file_path)
+                        
+                        file_size = os.path.getsize(file_path)
+                        
+                        file_ext = filename.rsplit('.', 1)[1].lower()
+                        file_type = 'image' if file_ext in {'png', 'jpg', 'jpeg', 'gif'} else 'file'
+                        
+                        attachments.append({
+                            'type': file_type,
+                            'filename': filename,
+                            'path': file_path.replace('\\', '/'),
+                            'size': file_size
+                        })
+            
+            user = get_user_by_id(session['user_id'])
+            
+            post_data = {
+                'title': title,
+                'content': content,
+                'author_id': session['user_id'],
+                'author_name': session.get('username', 'Unknown'),
+                'author_role': user.get('role', 'student') if user else 'student',
+                'attachments': attachments,
+                'tags': tags
+            }
+            
+            post_id = db.create_forum_post(post_data)
+            
+            return jsonify({'success': True, 'post_id': post_id, 'message': 'Tạo bài viết thành công'})
+        
+        except Exception as e:
+            return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'})
+    
+    return render_template('forum_create_post.html', username=session.get('username'))
+
+
+@app.route('/forum/edit/<post_id>', methods=['GET', 'POST'])
+@login_required
+def forum_edit_post(post_id):
+    post = db.get_forum_post_by_id(post_id)
+    
+    if not post:
+        flash('Bài viết không tồn tại', 'danger')
+        return redirect(url_for('forum'))
+    
+    if post['author_id'] != session['user_id']:
+        flash('Bạn không có quyền chỉnh sửa bài viết này', 'danger')
+        return redirect(url_for('forum'))
+    
+    if request.method == 'POST':
+        try:
+            title = request.form.get('title', '').strip()
+            content = request.form.get('content', '').strip()
+            tags_str = request.form.get('tags', '').strip()
+            
+            if not title or not content:
+                return jsonify({'success': False, 'message': 'Vui lòng nhập đầy đủ tiêu đề và nội dung'})
+            
+            tags = [tag.strip() for tag in tags_str.split(',') if tag.strip()] if tags_str else []
+            
+            attachments = post.get('attachments', [])
+            
+            if 'files' in request.files:
+                files = request.files.getlist('files')
+                for file in files:
+                    if file and file.filename and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        unique_filename = f"{uuid.uuid4().hex[:8]}_{filename}"
+                        
+                        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+                        file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+                        file.save(file_path)
+                        
+                        file_size = os.path.getsize(file_path)
+                        file_ext = filename.rsplit('.', 1)[1].lower()
+                        file_type = 'image' if file_ext in {'png', 'jpg', 'jpeg', 'gif'} else 'file'
+                        
+                        attachments.append({
+                            'type': file_type,
+                            'filename': filename,
+                            'path': file_path.replace('\\', '/'),
+                            'size': file_size
+                        })
+            
+            post_data = {
+                'title': title,
+                'content': content,
+                'attachments': attachments,
+                'tags': tags
+            }
+            
+            success = db.update_forum_post(post_id, post_data)
+            
+            if success:
+                return jsonify({'success': True, 'message': 'Cập nhật bài viết thành công'})
+            else:
+                return jsonify({'success': False, 'message': 'Cập nhật thất bại'})
+        
+        except Exception as e:
+            return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'})
+    
+    return render_template('forum_create_post.html', 
+                         post=post, 
+                         edit_mode=True,
+                         username=session.get('username'))
+
+
+@app.route('/forum/delete/<post_id>', methods=['POST'])
+@login_required
+def forum_delete_post(post_id):
+    post = db.get_forum_post_by_id(post_id)
+    
+    if not post:
+        return jsonify({'success': False, 'message': 'Bài viết không tồn tại'})
+    
+    if post['author_id'] != session['user_id']:
+        return jsonify({'success': False, 'message': 'Bạn không có quyền xóa bài viết này'})
+    
+    for attachment in post.get('attachments', []):
+        try:
+            if os.path.exists(attachment['path']):
+                os.remove(attachment['path'])
+        except:
+            pass
+    
+    db.delete_forum_post(post_id)
+    
+    return jsonify({'success': True, 'message': 'Xóa bài viết thành công'})
+
+
+@app.route('/forum/comment/<post_id>', methods=['POST'])
+@login_required
+def forum_add_comment(post_id):
+    try:
+        post = db.get_forum_post_by_id(post_id)
+        
+        if not post:
+            return jsonify({'success': False, 'message': 'Bài viết không tồn tại'})
+        
+        content = request.form.get('content', '').strip()
+        
+        if not content:
+            return jsonify({'success': False, 'message': 'Vui lòng nhập nội dung bình luận'})
+        
+        attachments = []
+        if 'files' in request.files:
+            files = request.files.getlist('files')
+            for file in files:
+                if file and file.filename and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    unique_filename = f"{uuid.uuid4().hex[:8]}_{filename}"
+                    
+                    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+                    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+                    file.save(file_path)
+                    
+                    file_size = os.path.getsize(file_path)
+                    file_ext = filename.rsplit('.', 1)[1].lower()
+                    file_type = 'image' if file_ext in {'png', 'jpg', 'jpeg', 'gif'} else 'file'
+                    
+                    attachments.append({
+                        'type': file_type,
+                        'filename': filename,
+                        'path': file_path.replace('\\', '/'),
+                        'size': file_size
+                    })
+        
+        user = get_user_by_id(session['user_id'])
+        
+        comment_data = {
+            'post_id': post_id,
+            'author_id': session['user_id'],
+            'author_name': session.get('username', 'Unknown'),
+            'author_role': user.get('role', 'student') if user else 'student',
+            'content': content,
+            'attachments': attachments
+        }
+        
+        comment_id = db.add_comment(comment_data)
+        
+        return jsonify({'success': True, 'comment_id': comment_id, 'message': 'Thêm bình luận thành công'})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'})
+
+
+@app.route('/forum/delete-comment/<comment_id>', methods=['POST'])
+@login_required
+def forum_delete_comment(comment_id):
+    comments = db._load_json(db.forum_comments_file)
+    comment = next((c for c in comments if c['id'] == comment_id), None)
+    
+    if not comment:
+        return jsonify({'success': False, 'message': 'Bình luận không tồn tại'})
+    
+    if comment['author_id'] != session['user_id']:
+        return jsonify({'success': False, 'message': 'Bạn không có quyền xóa bình luận này'})
+    
+    for attachment in comment.get('attachments', []):
+        try:
+            if os.path.exists(attachment['path']):
+                os.remove(attachment['path'])
+        except:
+            pass
+    
+    db.delete_comment(comment_id)
+    
+    return jsonify({'success': True, 'message': 'Xóa bình luận thành công'})
+
+
+def format_datetime(iso_string):
+    try:
+        dt = datetime.fromisoformat(iso_string)
+        return dt.strftime('%d/%m/%Y %H:%M')
+    except:
+        return iso_string
+#######
+@app.route('/chat')
+@login_required
+def chat_room():
+    messages = db.get_all_chat_messages()
+    
+    for msg in messages:
+        msg['created_at_formatted'] = format_datetime(msg['created_at'])
+    
+    return render_template('chat_room.html',
+                         messages=messages,
+                         username=session.get('username'))
+
+
+@app.route('/api/chat/send', methods=['POST'])
+@login_required
+def send_chat_message():
+    try:
+        data = request.get_json()
+        content = data.get('content', '').strip()
+        reply_to = data.get('reply_to')
+        
+        if not content:
+            return jsonify({'success': False, 'message': 'Nội dung không được để trống'})
+        
+        user = get_user_by_id(session['user_id'])
+        
+        message_data = {
+            'content': content,
+            'author_id': session['user_id'],
+            'author_name': session.get('username', 'Unknown'),
+            'author_role': user.get('role', 'student') if user else 'student',
+            'reply_to': reply_to
+        }
+        
+        message_id = db.add_chat_message(message_data)
+        message = db.get_chat_message_by_id(message_id)
+        message['created_at_formatted'] = format_datetime(message['created_at'])
+        
+        return jsonify({
+            'success': True,
+            'message': message
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'})
+
+
+@app.route('/api/chat/messages')
+@login_required
+def get_chat_messages():
+    try:
+        last_id = request.args.get('last_id', '')
+        messages = db.get_chat_messages_after(last_id)
+        
+        for msg in messages:
+            msg['created_at_formatted'] = format_datetime(msg['created_at'])
+        
+        return jsonify({
+            'success': True,
+            'messages': messages
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'})
+
+
+@app.route('/api/chat/delete/<message_id>', methods=['POST'])
+@login_required
+def delete_chat_message(message_id):
+    try:
+        message = db.get_chat_message_by_id(message_id)
+        
+        if not message:
+            return jsonify({'success': False, 'message': 'Tin nhắn không tồn tại'})
+        
+        if message['author_id'] != session['user_id']:
+            return jsonify({'success': False, 'message': 'Bạn không có quyền xóa tin nhắn này'})
+        
+        db.delete_chat_message(message_id)
+        
+        return jsonify({'success': True, 'message': 'Đã xóa tin nhắn'})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'})
+################
 if __name__ == '__main__':
     os.makedirs('data', exist_ok=True)
     os.makedirs('static/css', exist_ok=True)

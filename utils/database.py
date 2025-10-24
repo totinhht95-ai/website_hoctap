@@ -9,16 +9,21 @@ class Database:
         self.progress_file = 'data/progress.json'
         self.documents_file = 'data/documents.json'
         self.submissions_file = 'data/submissions.json'
+        self.forum_posts_file = 'data/forum_posts.json'
+        self.forum_comments_file = 'data/forum_comments.json'
+        self.chat_messages_file = 'data/chat_messages.json'
         self._init_files()
     
     def _init_files(self):
-        """Khởi tạo các file JSON nếu chưa có"""
         files = [
             self.courses_file, 
             self.exercises_file, 
             self.progress_file, 
             self.documents_file,
-            self.submissions_file
+            self.submissions_file,
+            self.forum_posts_file,
+            self.forum_comments_file,
+            self.chat_messages_file
         ]
         for file in files:
             if not os.path.exists(file):
@@ -26,7 +31,6 @@ class Database:
                     json.dump([], f)
     
     def _load_json(self, filename):
-        """Load dữ liệu từ file JSON"""
         try:
             with open(filename, 'r', encoding='utf-8') as f:
                 return json.load(f)
@@ -34,26 +38,21 @@ class Database:
             return []
     
     def _save_json(self, filename, data):
-        """Lưu dữ liệu vào file JSON"""
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
     def get_all_courses(self):
-        """Lấy tất cả khóa học"""
         return self._load_json(self.courses_file)
     
     def get_course_by_id(self, course_id):
-        """Lấy khóa học theo ID"""
         courses = self.get_all_courses()
         return next((c for c in courses if c['id'] == course_id), None)
     
     def get_courses_by_teacher(self, teacher_id):
-        """Lấy khóa học của giáo viên"""
         courses = self.get_all_courses()
         return [c for c in courses if c['teacher_id'] == teacher_id]
     
     def create_course(self, course_data, teacher_id):
-        """Tạo khóa học mới"""
         courses = self.get_all_courses()
         course_id = f"course_{len(courses) + 1}"
         
@@ -71,7 +70,6 @@ class Database:
         return course_id
     
     def update_course(self, course_id, course_data):
-        """Cập nhật khóa học"""
         courses = self.get_all_courses()
         for i, course in enumerate(courses):
             if course['id'] == course_id:
@@ -82,11 +80,9 @@ class Database:
         return False
     
     def get_all_exercises(self):
-        """Lấy tất cả bài tập"""
         return self._load_json(self.exercises_file)
     
     def save_exercise_submission(self, user_id, submission_data):
-        """Lưu bài làm của học sinh"""
         submissions = self._load_json(self.submissions_file)
         
         submission = {
@@ -103,17 +99,14 @@ class Database:
         return submission['id']
     
     def get_student_progress(self, user_id):
-        """Lấy tiến độ học của học sinh"""
         progress_list = self._load_json(self.progress_file)
         return [p for p in progress_list if p['user_id'] == user_id]
     
     def get_course_progress(self, user_id, course_id):
-        """Lấy tiến độ của học sinh trong 1 khóa học"""
         progress_list = self._load_json(self.progress_file)
         return next((p for p in progress_list if p['user_id'] == user_id and p['course_id'] == course_id), None)
     
     def update_progress(self, user_id, course_id, lesson_id, completed, **kwargs):
-        """Cập nhật tiến độ học"""
         progress_list = self._load_json(self.progress_file)
         
         timestamp = kwargs.get('timestamp', datetime.now().isoformat())
@@ -137,11 +130,9 @@ class Database:
         return True
     
     def get_all_documents(self):
-        """Lấy tất cả tài liệu"""
         return self._load_json(self.documents_file)
     
     def add_document(self, doc_data):
-        """Thêm tài liệu mới"""
         documents = self.get_all_documents()
         doc_id = f"doc_{len(documents) + 1}"
         
@@ -161,10 +152,200 @@ class Database:
         return doc_id
     
     def get_all_submissions(self):
-        """Lấy tất cả bài nộp"""
         return self._load_json(self.submissions_file)
     
     def get_submissions_by_course(self, course_id):
-        """Lấy bài nộp theo khóa học"""
         submissions = self.get_all_submissions()
         return [s for s in submissions if s.get('course_id') == course_id]
+    
+    def get_all_forum_posts(self):
+        posts = self._load_json(self.forum_posts_file)
+        posts.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        return posts
+    
+    def get_forum_post_by_id(self, post_id):
+        posts = self._load_json(self.forum_posts_file)
+        return next((p for p in posts if p['id'] == post_id), None)
+    
+    def get_forum_posts_by_user(self, user_id):
+        posts = self.get_all_forum_posts()
+        return [p for p in posts if p['author_id'] == user_id]
+    
+    def create_forum_post(self, post_data):
+        posts = self._load_json(self.forum_posts_file)
+        post_id = f"post_{len(posts) + 1:04d}"
+        
+        new_post = {
+            'id': post_id,
+            'title': post_data['title'],
+            'content': post_data['content'],
+            'author_id': post_data['author_id'],
+            'author_name': post_data['author_name'],
+            'author_role': post_data.get('author_role', 'student'),
+            'created_at': datetime.now().isoformat(),
+            'updated_at': None,
+            'attachments': post_data.get('attachments', []),
+            'tags': post_data.get('tags', []),
+            'views': 0,
+            'comments_count': 0
+        }
+        
+        posts.append(new_post)
+        self._save_json(self.forum_posts_file, posts)
+        return post_id
+    
+    def update_forum_post(self, post_id, post_data):
+        posts = self._load_json(self.forum_posts_file)
+        
+        for i, post in enumerate(posts):
+            if post['id'] == post_id:
+                if 'title' in post_data:
+                    posts[i]['title'] = post_data['title']
+                if 'content' in post_data:
+                    posts[i]['content'] = post_data['content']
+                if 'attachments' in post_data:
+                    posts[i]['attachments'] = post_data['attachments']
+                if 'tags' in post_data:
+                    posts[i]['tags'] = post_data['tags']
+                
+                posts[i]['updated_at'] = datetime.now().isoformat()
+                self._save_json(self.forum_posts_file, posts)
+                return True
+        
+        return False
+    
+    def delete_forum_post(self, post_id):
+        posts = self._load_json(self.forum_posts_file)
+        posts = [p for p in posts if p['id'] != post_id]
+        self._save_json(self.forum_posts_file, posts)
+        
+        comments = self._load_json(self.forum_comments_file)
+        comments = [c for c in comments if c['post_id'] != post_id]
+        self._save_json(self.forum_comments_file, comments)
+        
+        return True
+    
+    def increment_post_views(self, post_id):
+        posts = self._load_json(self.forum_posts_file)
+        
+        for i, post in enumerate(posts):
+            if post['id'] == post_id:
+                posts[i]['views'] = posts[i].get('views', 0) + 1
+                self._save_json(self.forum_posts_file, posts)
+                return True
+        
+        return False
+    
+    def search_forum_posts(self, keyword):
+        posts = self.get_all_forum_posts()
+        keyword_lower = keyword.lower()
+        
+        return [
+            p for p in posts 
+            if keyword_lower in p['title'].lower() 
+            or keyword_lower in p['content'].lower()
+        ]
+    
+    def get_comments_by_post(self, post_id):
+        comments = self._load_json(self.forum_comments_file)
+        post_comments = [c for c in comments if c['post_id'] == post_id]
+        post_comments.sort(key=lambda x: x.get('created_at', ''))
+        return post_comments
+    
+    def add_comment(self, comment_data):
+        comments = self._load_json(self.forum_comments_file)
+        comment_id = f"comment_{len(comments) + 1:04d}"
+        
+        new_comment = {
+            'id': comment_id,
+            'post_id': comment_data['post_id'],
+            'author_id': comment_data['author_id'],
+            'author_name': comment_data['author_name'],
+            'author_role': comment_data.get('author_role', 'student'),
+            'content': comment_data['content'],
+            'created_at': datetime.now().isoformat(),
+            'attachments': comment_data.get('attachments', [])
+        }
+        
+        comments.append(new_comment)
+        self._save_json(self.forum_comments_file, comments)
+        
+        self._update_comments_count(comment_data['post_id'])
+        
+        return comment_id
+    
+    def delete_comment(self, comment_id):
+        comments = self._load_json(self.forum_comments_file)
+        
+        comment = next((c for c in comments if c['id'] == comment_id), None)
+        if not comment:
+            return False
+        
+        post_id = comment['post_id']
+        
+        comments = [c for c in comments if c['id'] != comment_id]
+        self._save_json(self.forum_comments_file, comments)
+        
+        self._update_comments_count(post_id)
+        
+        return True
+    
+    def _update_comments_count(self, post_id):
+        posts = self._load_json(self.forum_posts_file)
+        comments = self.get_comments_by_post(post_id)
+        
+        for i, post in enumerate(posts):
+            if post['id'] == post_id:
+                posts[i]['comments_count'] = len(comments)
+                self._save_json(self.forum_posts_file, posts)
+                break
+    
+    def get_all_chat_messages(self):
+        messages = self._load_json(self.chat_messages_file)
+        messages.sort(key=lambda x: x.get('created_at', ''))
+        return messages
+
+    def get_chat_message_by_id(self, message_id):
+        messages = self._load_json(self.chat_messages_file)
+        return next((m for m in messages if m['id'] == message_id), None)
+
+    def add_chat_message(self, message_data):
+        messages = self._load_json(self.chat_messages_file)
+        message_id = f"msg_{len(messages) + 1:06d}"
+        
+        new_message = {
+            'id': message_id,
+            'content': message_data['content'],
+            'author_id': message_data['author_id'],
+            'author_name': message_data['author_name'],
+            'author_role': message_data.get('author_role', 'student'),
+            'created_at': datetime.now().isoformat(),
+            'reply_to': message_data.get('reply_to')
+        }
+        
+        messages.append(new_message)
+        self._save_json(self.chat_messages_file, messages)
+        return message_id
+
+    def delete_chat_message(self, message_id):
+        messages = self._load_json(self.chat_messages_file)
+        messages = [m for m in messages if m['id'] != message_id]
+        self._save_json(self.chat_messages_file, messages)
+        return True
+
+    def get_chat_messages_after(self, last_id):
+        messages = self.get_all_chat_messages()
+        
+        if not last_id:
+            return messages[-50:] if len(messages) > 50 else messages
+        
+        last_index = -1
+        for i, msg in enumerate(messages):
+            if msg['id'] == last_id:
+                last_index = i
+                break
+        
+        if last_index == -1:
+            return []
+        
+        return messages[last_index + 1:]
