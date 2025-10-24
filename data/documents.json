@@ -69,5 +69,13 @@
     "url": "https://docs.google.com/document/d/1L4sTUq2pxYwtiPIGjxqhyU2rd4fRKorVU8Lm9BYvZ_k/edit?usp=sharing",
     "description": "các em xem qua nhé",
     "created_at": "2025-10-23T10:31:28.026260"
+  },
+  {
+    "id": "doc_9",
+    "title": "tài liệu c++",
+    "type": "pdf",
+    "url": "https://docs.google.com/document/d/1L4sTUq2pxYwtiPIGjxqhyU2rd4fRKorVU8Lm9BYvZ_k/edit?usp=drive_link",
+    "description": "hhsdhhd",
+    "created_at": "2025-10-23T18:01:24.243638"
   }
 ]

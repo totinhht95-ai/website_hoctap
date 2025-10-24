@@ -5,103 +5,154 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1> Kho tài liệu học tập</h1>
-        <p class="subtitle">Video bài giảng và tài liệu tham khảo</p>
+        <h1>Kho tài liệu học tập</h1>
+        <p class="subtitle">Tài liệu, bài giảng và đề thi theo từng lớp</p>
         
         {% if session.role == 'teacher' %}
         <a href="{{ url_for('add_document') }}" class="btn btn-primary">+ Thêm tài liệu mới</a>
         {% endif %}
     </div>
 
-    <div class="filters">
-        <button class="filter-btn active" onclick="filterDocs('all')">Tất cả</button>
-        <button class="filter-btn" onclick="filterDocs('youtube')"> YouTube</button>
-        <button class="filter-btn" onclick="filterDocs('drive')">📁 Google Drive</button>
-        <button class="filter-btn" onclick="filterDocs('other')">📄 Khác</button>
+    <!-- PHẦN MỚI: Bộ lọc theo lớp -->
+    <div class="grade-filters">
+        <button class="grade-btn {% if current_grade == 'all' %}active{% endif %}" 
+                onclick="location.href='{{ url_for('documents', grade='all', type=current_type) }}'">
+            Tất cả lớp
+        </button>
+        <button class="grade-btn {% if current_grade == '10' %}active{% endif %}" 
+                onclick="location.href='{{ url_for('documents', grade='10', type=current_type) }}'">
+            Lớp 10
+        </button>
+        <button class="grade-btn {% if current_grade == '11' %}active{% endif %}" 
+                onclick="location.href='{{ url_for('documents', grade='11', type=current_type) }}'">
+            Lớp 11
+        </button>
+        <button class="grade-btn {% if current_grade == '12' %}active{% endif %}" 
+                onclick="location.href='{{ url_for('documents', grade='12', type=current_type) }}'">
+            Lớp 12
+        </button>
     </div>
 
-    {% if youtube_docs or drive_docs or other_docs %}
-    <div class="documents-grid" id="documentsGrid">
-        {% for doc in youtube_docs %}
-        <div class="document-card" data-type="youtube">
-            <div class="doc-icon youtube-icon">🎥</div>
-            <h3>{{ doc.title }}</h3>
-            <p class="doc-description">{{ doc.description or 'Video bài giảng' }}</p>
-            <div class="doc-meta">
-                <span class="doc-type-badge youtube">YouTube</span>
-                <span class="doc-date">{{ doc.created_at[:10] if doc.created_at else 'N/A' }}</span>
-            </div>
-            <a href="{{ doc.url }}" target="_blank" class="btn btn-primary btn-block">
-                ▶ Xem video
-            </a>
-        </div>
-        {% endfor %}
-
-        {% for doc in drive_docs %}
-        <div class="document-card" data-type="drive">
-            <div class="doc-icon drive-icon">📁</div>
-            <h3>{{ doc.title }}</h3>
-            <p class="doc-description">{{ doc.description or 'Tài liệu học tập' }}</p>
-            <div class="doc-meta">
-                <span class="doc-type-badge drive">Google Drive</span>
-                <span class="doc-date">{{ doc.created_at[:10] if doc.created_at else 'N/A' }}</span>
-            </div>
-            <a href="{{ doc.url }}" target="_blank" class="btn btn-success btn-block">
-                 Tải tài liệu
-            </a>
-        </div>
-        {% endfor %}
-
-        {% for doc in other_docs %}
-        <div class="document-card" data-type="other">
-            <div class="doc-icon other-icon"></div>
-            <h3>{{ doc.title }}</h3>
-            <p class="doc-description">{{ doc.description or 'Tài liệu tham khảo' }}</p>
-            <div class="doc-meta">
-                <span class="doc-type-badge other">{{ doc.type|upper }}</span>
-                <span class="doc-date">{{ doc.created_at[:10] if doc.created_at else 'N/A' }}</span>
-            </div>
-            <a href="{{ doc.url }}" target="_blank" class="btn btn-secondary btn-block">
-                🔗 Xem tài liệu
-            </a>
-        </div>
-        {% endfor %}
+    <!-- PHẦN MỚI: Bộ lọc theo loại tài liệu -->
+    <div class="type-filters">
+        <button class="type-btn {% if current_type == 'all' %}active{% endif %}" 
+                onclick="location.href='{{ url_for('documents', grade=current_grade, type='all') }}'">
+            Tất cả
+        </button>
+        <button class="type-btn {% if current_type == 'document' %}active{% endif %}" 
+                onclick="location.href='{{ url_for('documents', grade=current_grade, type='document') }}'">
+            Tài liệu
+        </button>
+        <button class="type-btn {% if current_type == 'lecture' %}active{% endif %}" 
+                onclick="location.href='{{ url_for('documents', grade=current_grade, type='lecture') }}'">
+            Bài giảng
+        </button>
+        <button class="type-btn {% if current_type == 'exam' %}active{% endif %}" 
+                onclick="location.href='{{ url_for('documents', grade=current_grade, type='exam') }}'">
+            Bộ đề thi
+        </button>
     </div>
+
+    <!-- PHẦN MỚI: Hiển thị tài liệu theo từng lớp -->
+    {% if current_grade == 'all' %}
+        <!-- Hiển thị theo lớp khi chọn "Tất cả lớp" -->
+        {% for grade, docs in docs_by_grade.items() %}
+            {% if docs %}
+            <div class="grade-section">
+                <h2 class="grade-title">Lớp {{ grade }}</h2>
+                <div class="documents-grid">
+                    {% for doc in docs %}
+                    <!-- CẬP NHẬT: Hiển thị thông tin tài liệu với các trường mới -->
+                    <div class="document-card">
+                        <div class="doc-header">
+                            <!-- Hiển thị loại tài liệu -->
+                            <span class="doc-type-badge {{ doc.doc_type }}">
+                                {% if doc.doc_type == 'document' %}Tài liệu
+                                {% elif doc.doc_type == 'lecture' %}Bài giảng
+                                {% elif doc.doc_type == 'exam' %}Đề thi
+                                {% else %}Khác{% endif %}
+                            </span>
+                            <span class="doc-grade-badge">Lớp {{ doc.grade }}</span>
+                        </div>
+                        
+                        <h3>{{ doc.title }}</h3>
+                        <p class="doc-description">{{ doc.description or 'Không có mô tả' }}</p>
+                        
+                        <div class="doc-meta">
+                            <!-- Hiển thị loại link -->
+                            <span class="link-type">
+                                {% if doc.link_type == 'youtube' %}YouTube
+                                {% elif doc.link_type == 'drive' %}Google Drive
+                                {% else %}Link{% endif %}
+                            </span>
+                            <span class="doc-date">{{ doc.created_at[:10] if doc.created_at else 'N/A' }}</span>
+                        </div>
+                        
+                        <!-- Nút xem/tải tài liệu -->
+                        <a href="{{ doc.url }}" target="_blank" class="btn btn-primary btn-block">
+                            {% if doc.link_type == 'youtube' %}Xem video
+                            {% elif doc.link_type == 'drive' %}Tải tài liệu
+                            {% else %}Xem tài liệu{% endif %}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
     {% else %}
-    <div class="empty-state">
-        <div class="empty-icon"></div>
-        <h3>Chưa có tài liệu nào</h3>
-        <p>Kho tài liệu đang được cập nhật. Vui lòng quay lại sau!</p>
-        {% if session.role == 'teacher' %}
-        <a href="{{ url_for('add_document') }}" class="btn btn-primary">Thêm tài liệu đầu tiên</a>
+        <!-- Hiển thị tài liệu của lớp được chọn -->
+        {% set selected_docs = docs_by_grade.get(current_grade, []) %}
+        {% if selected_docs %}
+        <div class="documents-grid">
+            {% for doc in selected_docs %}
+            <!-- CẬP NHẬT: Tương tự như trên -->
+            <div class="document-card">
+                <div class="doc-header">
+                    <span class="doc-type-badge {{ doc.doc_type }}">
+                        {% if doc.doc_type == 'document' %}Tài liệu
+                        {% elif doc.doc_type == 'lecture' %}Bài giảng
+                        {% elif doc.doc_type == 'exam' %}Đề thi
+                        {% else %}Khác{% endif %}
+                    </span>
+                    <span class="doc-grade-badge">Lớp {{ doc.grade }}</span>
+                </div>
+                
+                <h3>{{ doc.title }}</h3>
+                <p class="doc-description">{{ doc.description or 'Không có mô tả' }}</p>
+                
+                <div class="doc-meta">
+                    <span class="link-type">
+                        {% if doc.link_type == 'youtube' %}YouTube
+                        {% elif doc.link_type == 'drive' %}Google Drive
+                        {% else %}Link{% endif %}
+                    </span>
+                    <span class="doc-date">{{ doc.created_at[:10] if doc.created_at else 'N/A' }}</span>
+                </div>
+                
+                <a href="{{ doc.url }}" target="_blank" class="btn btn-primary btn-block">
+                    {% if doc.link_type == 'youtube' %}Xem video
+                    {% elif doc.link_type == 'drive' %}Tải tài liệu
+                    {% else %}Xem tài liệu{% endif %}
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Trạng thái trống khi không có tài liệu -->
+        <div class="empty-state">
+            <h3>Chưa có tài liệu nào</h3>
+            <p>Chưa có tài liệu cho lớp {{ current_grade }} trong danh mục này.</p>
+            {% if session.role == 'teacher' %}
+            <a href="{{ url_for('add_document') }}" class="btn btn-primary">Thêm tài liệu đầu tiên</a>
+            {% endif %}
+        </div>
         {% endif %}
-    </div>
     {% endif %}
 </div>
 
-<script>
-function filterDocs(type) {
-    const cards = document.querySelectorAll('.document-card');
-    const buttons = document.querySelectorAll('.filter-btn');
-    
-    buttons.forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    cards.forEach(card => {
-        if (type === 'all') {
-            card.style.display = 'block';
-        } else {
-            if (card.dataset.type === type) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        }
-    });
-}
-</script>
-
 <style>
+/* CSS CHO PHẦN LỚP HỌC */
 .page-header {
     text-align: center;
     margin-bottom: 30px;
@@ -116,7 +167,40 @@ function filterDocs(type) {
     margin-bottom: 20px;
 }
 
-.filters {
+/* STYLE MỚI: Bộ lọc theo lớp */
+.grade-filters {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.grade-btn {
+    padding: 12px 30px;
+    border: 2px solid #007bff;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 15px;
+    font-weight: 600;
+    color: #007bff;
+}
+
+.grade-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.grade-btn.active {
+    background: #007bff;
+    color: white;
+}
+
+/* STYLE MỚI: Bộ lọc theo loại tài liệu */
+.type-filters {
     display: flex;
     justify-content: center;
     gap: 10px;
@@ -124,7 +208,7 @@ function filterDocs(type) {
     flex-wrap: wrap;
 }
 
-.filter-btn {
+.type-btn {
     padding: 8px 20px;
     border: 2px solid #ddd;
     background: white;
@@ -133,19 +217,34 @@ function filterDocs(type) {
     transition: all 0.3s;
     font-size: 14px;
     font-weight: 500;
+    color: #666;
 }
 
-.filter-btn:hover {
-    border-color: #007bff;
-    color: #007bff;
+.type-btn:hover {
+    border-color: #28a745;
+    color: #28a745;
 }
 
-.filter-btn.active {
-    background: #007bff;
-    border-color: #007bff;
+.type-btn.active {
+    background: #28a745;
+    border-color: #28a745;
     color: white;
 }
 
+/* STYLE MỚI: Phần chia theo lớp */
+.grade-section {
+    margin-bottom: 50px;
+}
+
+.grade-title {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #007bff;
+}
+
+/* CẬP NHẬT: Grid hiển thị tài liệu */
 .documents-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -168,10 +267,45 @@ function filterDocs(type) {
     box-shadow: 0 8px 16px rgba(0,0,0,0.1);
 }
 
-.doc-icon {
-    font-size: 48px;
-    text-align: center;
+/* STYLE MỚI: Header của card với badges */
+.doc-header {
+    display: flex;
+    gap: 8px;
     margin-bottom: 15px;
+}
+
+/* STYLE MỚI: Badge loại tài liệu */
+.doc-type-badge {
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.doc-type-badge.document {
+    background: #17a2b820;
+    color: #17a2b8;
+}
+
+.doc-type-badge.lecture {
+    background: #28a74520;
+    color: #28a745;
+}
+
+.doc-type-badge.exam {
+    background: #dc354520;
+    color: #dc3545;
+}
+
+/* STYLE MỚI: Badge lớp học */
+.doc-grade-badge {
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #007bff20;
+    color: #007bff;
 }
 
 .document-card h3 {
@@ -189,6 +323,7 @@ function filterDocs(type) {
     min-height: 40px;
 }
 
+/* CẬP NHẬT: Meta info với loại link */
 .doc-meta {
     display: flex;
     justify-content: space-between;
@@ -198,25 +333,11 @@ function filterDocs(type) {
     border-top: 1px solid #f0f0f0;
 }
 
-.doc-type-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
+.link-type {
+    padding: 3px 8px;
+    border-radius: 10px;
     font-size: 11px;
     font-weight: 600;
-    text-transform: uppercase;
-}
-
-.doc-type-badge.youtube {
-    background: #ff000020;
-    color: #ff0000;
-}
-
-.doc-type-badge.drive {
-    background: #4285f420;
-    color: #4285f4;
-}
-
-.doc-type-badge.other {
     background: #6c757d20;
     color: #6c757d;
 }
@@ -237,12 +358,6 @@ function filterDocs(type) {
     background: white;
     border-radius: 12px;
     border: 2px dashed #ddd;
-}
-
-.empty-icon {
-    font-size: 80px;
-    margin-bottom: 20px;
-    opacity: 0.5;
 }
 
 .empty-state h3 {
@@ -275,27 +390,18 @@ function filterDocs(type) {
     background-color: #0056b3;
 }
 
-.btn-success {
-    background-color: #28a745;
-    color: white;
-}
-
-.btn-success:hover {
-    background-color: #218838;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background-color: #545b62;
-}
-
 @media (max-width: 768px) {
     .documents-grid {
         grid-template-columns: 1fr;
+    }
+    
+    /* Responsive cho bộ lọc */
+    .grade-filters, .type-filters {
+        flex-direction: column;
+    }
+    
+    .grade-btn, .type-btn {
+        width: 100%;
     }
 }
 </style>

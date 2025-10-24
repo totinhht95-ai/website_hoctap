@@ -1,0 +1,500 @@
+{
+  "exams": [
+    {
+      "id": "exam_12_01",
+      "title": "Đề trắc nghiệm Tin học 12 - Mạng máy tính",
+      "time_limit": 15,
+      "description": "Kiểm tra kiến thức về mạng máy tính và Internet",
+      "questions": [
+        {
+          "id": 1,
+          "number": 1,
+          "question": "Internet là gì?",
+          "options": {
+            "A": "Mạng máy tính cục bộ",
+            "B": "Mạng máy tính toàn cầu",
+            "C": "Phần mềm máy tính",
+            "D": "Hệ điều hành"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 2,
+          "number": 2,
+          "question": "LAN là viết tắt của gì?",
+          "options": {
+            "A": "Large Area Network",
+            "B": "Local Area Network",
+            "C": "Long Access Network",
+            "D": "Limited Area Network"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 3,
+          "number": 3,
+          "question": "WAN là mạng gì?",
+          "options": {
+            "A": "Mạng diện rộng",
+            "B": "Mạng cục bộ",
+            "C": "Mạng đô thị",
+            "D": "Mạng gia đình"
+          },
+          "correct_answer": "A"
+        },
+        {
+          "id": 4,
+          "number": 4,
+          "question": "IP Address là gì?",
+          "options": {
+            "A": "Tên miền",
+            "B": "Địa chỉ IP",
+            "C": "Mật khẩu",
+            "D": "Tên máy tính"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 5,
+          "number": 5,
+          "question": "Địa chỉ IP phiên bản 4 (IPv4) có độ dài bao nhiêu bit?",
+          "options": {
+            "A": "16 bit",
+            "B": "32 bit",
+            "C": "64 bit",
+            "D": "128 bit"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 6,
+          "number": 6,
+          "question": "DNS là viết tắt của gì?",
+          "options": {
+            "A": "Domain Name System",
+            "B": "Data Network Service",
+            "C": "Digital Name Server",
+            "D": "Domain Network System"
+          },
+          "correct_answer": "A"
+        },
+        {
+          "id": 7,
+          "number": 7,
+          "question": "Router có chức năng gì?",
+          "options": {
+            "A": "Lưu trữ dữ liệu",
+            "B": "Định tuyến dữ liệu giữa các mạng",
+            "C": "Hiển thị hình ảnh",
+            "D": "Xử lý văn bản"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 8,
+          "number": 8,
+          "question": "HTTP là viết tắt của gì?",
+          "options": {
+            "A": "HyperText Transfer Protocol",
+            "B": "High Transfer Text Protocol",
+            "C": "Home Tool Transfer Protocol",
+            "D": "HyperText Transmission Page"
+          },
+          "correct_answer": "A"
+        },
+        {
+          "id": 9,
+          "number": 9,
+          "question": "HTTPS khác HTTP ở điểm nào?",
+          "options": {
+            "A": "Nhanh hơn",
+            "B": "Bảo mật hơn",
+            "C": "Đơn giản hơn",
+            "D": "Rẻ hơn"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 10,
+          "number": 10,
+          "question": "FTP là gì?",
+          "options": {
+            "A": "Giao thức truyền file",
+            "B": "Giao thức email",
+            "C": "Giao thức web",
+            "D": "Giao thức mạng xã hội"
+          },
+          "correct_answer": "A"
+        },
+        {
+          "id": 11,
+          "number": 11,
+          "question": "URL là viết tắt của gì?",
+          "options": {
+            "A": "Universal Resource Locator",
+            "B": "Uniform Resource Locator",
+            "C": "United Resource Link",
+            "D": "Universal Reference Link"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 12,
+          "number": 12,
+          "question": "Switch trong mạng máy tính có tác dụng gì?",
+          "options": {
+            "A": "Kết nối các thiết bị trong cùng mạng LAN",
+            "B": "Kết nối Internet",
+            "C": "Lưu trữ dữ liệu",
+            "D": "Bảo mật mạng"
+          },
+          "correct_answer": "A"
+        },
+        {
+          "id": 13,
+          "number": 13,
+          "question": "Firewall có chức năng gì?",
+          "options": {
+            "A": "Tăng tốc độ mạng",
+            "B": "Bảo vệ mạng khỏi truy cập trái phép",
+            "C": "Lưu trữ dữ liệu",
+            "D": "Kết nối các mạng"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 14,
+          "number": 14,
+          "question": "Bandwidth là gì?",
+          "options": {
+            "A": "Băng thông mạng",
+            "B": "Địa chỉ IP",
+            "C": "Tên miền",
+            "D": "Giao thức mạng"
+          },
+          "correct_answer": "A"
+        },
+        {
+          "id": 15,
+          "number": 15,
+          "question": "Đơn vị đo tốc độ truyền dữ liệu thông dụng là gì?",
+          "options": {
+            "A": "Hz",
+            "B": "Mbps",
+            "C": "Watt",
+            "D": "GB"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 16,
+          "number": 16,
+          "question": "Modem có chức năng gì?",
+          "options": {
+            "A": "Chuyển đổi tín hiệu analog và digital",
+            "B": "Lưu trữ dữ liệu",
+            "C": "Hiển thị hình ảnh",
+            "D": "In ấn tài liệu"
+          },
+          "correct_answer": "A"
+        },
+        {
+          "id": 17,
+          "number": 17,
+          "question": "TCP/IP là gì?",
+          "options": {
+            "A": "Bộ giao thức truyền thông Internet",
+            "B": "Phần mềm diệt virus",
+            "C": "Hệ điều hành",
+            "D": "Trình duyệt web"
+          },
+          "correct_answer": "A"
+        },
+        {
+          "id": 18,
+          "number": 18,
+          "question": "Email sử dụng giao thức nào để gửi thư?",
+          "options": {
+            "A": "HTTP",
+            "B": "FTP",
+            "C": "SMTP",
+            "D": "DNS"
+          },
+          "correct_answer": "C"
+        },
+        {
+          "id": 19,
+          "number": 19,
+          "question": "Wi-Fi là công nghệ mạng gì?",
+          "options": {
+            "A": "Mạng có dây",
+            "B": "Mạng không dây",
+            "C": "Mạng quang",
+            "D": "Mạng vệ tinh"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 20,
+          "number": 20,
+          "question": "Địa chỉ IP nào sau đây là địa chỉ riêng (private)?",
+          "options": {
+            "A": "8.8.8.8",
+            "B": "192.168.1.1",
+            "C": "1.1.1.1",
+            "D": "123.45.67.89"
+          },
+          "correct_answer": "B"
+        }
+      ]
+    },
+    {
+      "id": "exam_12_02",
+      "title": "Đề trắc nghiệm Tin học 12 - HTML và CSS",
+      "time_limit": 15,
+      "description": "Kiểm tra kiến thức về HTML và CSS cơ bản",
+      "questions": [
+        {
+          "id": 1,
+          "number": 1,
+          "question": "HTML là viết tắt của gì?",
+          "options": {
+            "A": "HyperText Markup Language",
+            "B": "High Tech Modern Language",
+            "C": "Home Tool Markup Language",
+            "D": "HyperText Making Language"
+          },
+          "correct_answer": "A"
+        },
+        {
+          "id": 2,
+          "number": 2,
+          "question": "Thẻ nào dùng để tạo tiêu đề lớn nhất trong HTML?",
+          "options": {
+            "A": "<h6>",
+            "B": "<h3>",
+            "C": "<h1>",
+            "D": "<head>"
+          },
+          "correct_answer": "C"
+        },
+        {
+          "id": 3,
+          "number": 3,
+          "question": "Thẻ nào dùng để tạo đoạn văn trong HTML?",
+          "options": {
+            "A": "<p>",
+            "B": "<paragraph>",
+            "C": "<text>",
+            "D": "<div>"
+          },
+          "correct_answer": "A"
+        },
+        {
+          "id": 4,
+          "number": 4,
+          "question": "CSS là viết tắt của gì?",
+          "options": {
+            "A": "Computer Style Sheets",
+            "B": "Cascading Style Sheets",
+            "C": "Creative Style System",
+            "D": "Colorful Style Sheets"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 5,
+          "number": 5,
+          "question": "Thẻ nào dùng để chèn hình ảnh trong HTML?",
+          "options": {
+            "A": "<image>",
+            "B": "<picture>",
+            "C": "<img>",
+            "D": "<photo>"
+          },
+          "correct_answer": "C"
+        },
+        {
+          "id": 6,
+          "number": 6,
+          "question": "Thuộc tính nào chỉ định đường dẫn hình ảnh?",
+          "options": {
+            "A": "href",
+            "B": "src",
+            "C": "link",
+            "D": "url"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 7,
+          "number": 7,
+          "question": "Thẻ nào dùng để tạo liên kết trong HTML?",
+          "options": {
+            "A": "<link>",
+            "B": "<a>",
+            "C": "<href>",
+            "D": "<url>"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 8,
+          "number": 8,
+          "question": "Thuộc tính nào chỉ định địa chỉ liên kết?",
+          "options": {
+            "A": "src",
+            "B": "link",
+            "C": "href",
+            "D": "url"
+          },
+          "correct_answer": "C"
+        },
+        {
+          "id": 9,
+          "number": 9,
+          "question": "Thẻ nào dùng để tạo danh sách có thứ tự?",
+          "options": {
+            "A": "<ul>",
+            "B": "<ol>",
+            "C": "<list>",
+            "D": "<dl>"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 10,
+          "number": 10,
+          "question": "Thẻ nào dùng để tạo danh sách không có thứ tự?",
+          "options": {
+            "A": "<ol>",
+            "B": "<ul>",
+            "C": "<list>",
+            "D": "<nl>"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 11,
+          "number": 11,
+          "question": "Trong CSS, cách nào chọn phần tử theo class?",
+          "options": {
+            "A": "#tên-class",
+            "B": ".tên-class",
+            "C": "*tên-class",
+            "D": "class=tên-class"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 12,
+          "number": 12,
+          "question": "Trong CSS, cách nào chọn phần tử theo id?",
+          "options": {
+            "A": ".tên-id",
+            "B": "#tên-id",
+            "C": "*tên-id",
+            "D": "id=tên-id"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 13,
+          "number": 13,
+          "question": "Thuộc tính CSS nào dùng để thay đổi màu chữ?",
+          "options": {
+            "A": "text-color",
+            "B": "font-color",
+            "C": "color",
+            "D": "text-style"
+          },
+          "correct_answer": "C"
+        },
+        {
+          "id": 14,
+          "number": 14,
+          "question": "Thuộc tính CSS nào dùng để thay đổi kích thước chữ?",
+          "options": {
+            "A": "text-size",
+            "B": "font-size",
+            "C": "text-style",
+            "D": "size"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 15,
+          "number": 15,
+          "question": "Thẻ <table> dùng để làm gì?",
+          "options": {
+            "A": "Tạo danh sách",
+            "B": "Tạo bảng",
+            "C": "Tạo form",
+            "D": "Tạo liên kết"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 16,
+          "number": 16,
+          "question": "Thẻ <tr> trong bảng HTML dùng để làm gì?",
+          "options": {
+            "A": "Tạo cột",
+            "B": "Tạo hàng",
+            "C": "Tạo tiêu đề",
+            "D": "Tạo đường viền"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 17,
+          "number": 17,
+          "question": "Thuộc tính CSS nào dùng để thay đổi màu nền?",
+          "options": {
+            "A": "color",
+            "B": "background-color",
+            "C": "bg-color",
+            "D": "bgcolor"
+          },
+          "correct_answer": "B"
+        },
+        {
+          "id": 18,
+          "number": 18,
+          "question": "Thẻ <div> có tác dụng gì?",
+          "options": {
+            "A": "Tạo đoạn văn",
+            "B": "Tạo tiêu đề",
+            "C": "Tạo khối phân chia",
+            "D": "Tạo liên kết"
+          },
+          "correct_answer": "C"
+        },
+        {
+          "id": 19,
+          "number": 19,
+          "question": "Thuộc tính CSS nào dùng để căn giữa văn bản?",
+          "options": {
+            "A": "text-align: center",
+            "B": "align: center",
+            "C": "center-text",
+            "D": "text-center"
+          },
+          "correct_answer": "A"
+        },
+        {
+          "id": 20,
+          "number": 20,
+          "question": "Thẻ <br> dùng để làm gì?",
+          "options": {
+            "A": "In đậm văn bản",
+            "B": "Xuống hàng",
+            "C": "Tạo đường kẻ ngang",
+            "D": "Tạo khoảng trắng"
+          },
+          "correct_answer": "B"
+        }
+      ]
+    }
+  ]
+}
