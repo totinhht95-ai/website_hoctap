@@ -468,17 +468,6 @@
             <ul class="nav-menu" id="navMenu">
                 {% if session.user_id %}
                     <li><a href="{{ url_for('index') }}">Trang chủ</a></li>
-                    
-                    <!-- Dropdown Học tập -->
-                    <li class="dropdown">
-                        <a>TN-THPT</a>
-                        <div class="dropdown-menu-custom">
-                            <a href="{{ url_for('exercises') }}">Bài tập</a>
-                            <a href="{{ url_for('tracnghiem') }}">Trắc nghiệm</a>
-                            <a href="{{ url_for('onthi') }}">Ôn thi</a>
-                        </div>
-                    </li>
-                    
                     <!-- Dropdown Lớp học -->
                     <li class="dropdown">
                         <a>Học tập</a>
@@ -489,6 +478,17 @@
                         </div>
                     </li>
                     
+                    <!-- Dropdown Học tập -->
+                    <li class="dropdown">
+                        <a>TN-THPT</a>
+                        <div class="dropdown-menu-custom">
+                            <a href="{{ url_for('onthi') }}">Tài liệu ôn thi</a>
+                            <a href="{{ url_for('exercises') }}">Bài tập</a>
+                            <a href="{{ url_for('tracnghiem') }}">Trắc nghiệm</a>
+                        </div>
+                    </li>
+                    
+
                     <li><a href="{{ url_for('forum') }}">Diễn đàn</a></li>
                     
                     <!-- Gộp Chat & Hỏi đáp -->
@@ -500,20 +500,11 @@
                         </div>
                     </li>
                     
-                    <!-- Menu phụ -->
-                    <li class="dropdown">
-                        <a>Khác</a>
-                        <div class="dropdown-menu-custom">
-                            
-                            <a href="{{ url_for('documents') }}">Học online</a>
-                            <a href="{{ url_for('courses') }}">Ôn tập</a>
-                            {% if session.role == 'teacher' %}
-                                <a href="{{ url_for('teacher_dashboard') }}">Thống kê</a>
-                            {% else %}
-                                <a href="{{ url_for('student_dashboard') }}">Thống kê</a>
-                            {% endif %}
-                        </div>
-                    </li>
+                    {% if session.role == 'teacher' %}
+                        <li><a href="{{ url_for('teacher_dashboard') }}">Thống kê</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('student_dashboard') }}">Thống kê</a></li>
+                    {% endif %}
                     
                     <li><span>👤 {{ session.username }}</span></li>
                     <li><a href="{{ url_for('logout') }}" class="btn-logout">Đăng xuất</a></li>
