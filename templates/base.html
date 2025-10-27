@@ -467,18 +467,17 @@
                     
                     <!-- Dropdown Học tập -->
                     <li class="dropdown">
-                        <a>Học tập</a>
+                        <a>TN-THPT</a>
                         <div class="dropdown-menu-custom">
-                            <a href="{{ url_for('documents') }}">Học online</a>
                             <a href="{{ url_for('exercises') }}">Bài tập</a>
-                            <a href="{{ url_for('courses') }}">Ôn thi THPT</a>
                             <a href="{{ url_for('tracnghiem') }}">Trắc nghiệm</a>
+                            <a href="{{ url_for('onthi') }}">Ôn thi</a>
                         </div>
                     </li>
                     
                     <!-- Dropdown Lớp học -->
                     <li class="dropdown">
-                        <a>Lớp học</a>
+                        <a>Học tập</a>
                         <div class="dropdown-menu-custom">
                             <a href="{{ url_for('lop10') }}">Lớp 10</a>
                             <a href="{{ url_for('lop11') }}">Lớp 11</a>
@@ -501,7 +500,9 @@
                     <li class="dropdown">
                         <a>Khác</a>
                         <div class="dropdown-menu-custom">
-                            <a href="{{ url_for('onthi') }}">Ôn thi</a>
+                            
+                            <a href="{{ url_for('documents') }}">Học online</a>
+                            <a href="{{ url_for('courses') }}">Ôn tập</a>
                             {% if session.role == 'teacher' %}
                                 <a href="{{ url_for('teacher_dashboard') }}">Thống kê</a>
                             {% else %}
