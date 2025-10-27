@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Học Tin THPT{% endblock %}</title>
+    <title>Học Tin THPT</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
     <style>
         * {
@@ -268,50 +267,6 @@
             transform: translateY(0);
         }
 
-        .alert {
-            border: none;
-            border-radius: 14px;
-            padding: 1.125rem 1.5rem;
-            font-weight: 500;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            animation: slideDown 0.4s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .alert-success {
-            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-            color: #155724;
-            border-left: 4px solid #28a745;
-        }
-
-        .alert-danger {
-            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-        }
-
-        .alert-warning {
-            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-            color: #856404;
-            border-left: 4px solid #ffc107;
-        }
-
-        .alert-info {
-            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
-            color: #0c5460;
-            border-left: 4px solid #17a2b8;
-        }
-
         .main-content {
             flex: 1;
             padding: 2rem 0;
@@ -400,6 +355,11 @@
                 margin-left: auto;
             }
 
+            /* Hiển thị mũi tên quay khi active */
+            .dropdown.active > a::after {
+                transform: rotate(180deg);
+            }
+
             .btn-logout,
             .btn-register {
                 text-align: center;
@@ -453,7 +413,7 @@
     
     <nav class="navbar">
         <div class="container">
-            <a href="{{ url_for('index') }}" class="logo">Tin Học THPT</a>
+            <a href="#" class="logo">Tin Học THPT</a>
             
             <div class="hamburger" id="hamburger">
                 <span></span>
@@ -462,80 +422,60 @@
             </div>
             
             <ul class="nav-menu" id="navMenu">
-                {% if session.user_id %}
-                    <li><a href="{{ url_for('index') }}">Trang chủ</a></li>
-                    
-                    <!-- Dropdown Học tập -->
-                    <li class="dropdown">
-                        <a>TN-THPT</a>
-                        <div class="dropdown-menu-custom">
-                            <a href="{{ url_for('exercises') }}">Bài tập</a>
-                            <a href="{{ url_for('tracnghiem') }}">Trắc nghiệm</a>
-                            <a href="{{ url_for('onthi') }}">Ôn thi</a>
-                        </div>
-                    </li>
-                    
-                    <!-- Dropdown Lớp học -->
-                    <li class="dropdown">
-                        <a>Học tập</a>
-                        <div class="dropdown-menu-custom">
-                            <a href="{{ url_for('lop10') }}">Lớp 10</a>
-                            <a href="{{ url_for('lop11') }}">Lớp 11</a>
-                            <a href="{{ url_for('lop12') }}">Lớp 12</a>
-                        </div>
-                    </li>
-                    
-                    <li><a href="{{ url_for('forum') }}">Diễn đàn</a></li>
-                    
-                    <!-- Gộp Chat & Hỏi đáp -->
-                    <li class="dropdown">
-                        <a>Chat & Hỏi đáp</a>
-                        <div class="dropdown-menu-custom">
-                            <a href="{{ url_for('chat_room') }}">Chat</a>
-                            <a href="{{ url_for('chatbot') }}">Hỏi đáp AI</a>
-                        </div>
-                    </li>
-                    
-                    <!-- Menu phụ -->
-                    <li class="dropdown">
-                        <a>Khác</a>
-                        <div class="dropdown-menu-custom">
-                            
-                            <a href="{{ url_for('documents') }}">Học online</a>
-                            <a href="{{ url_for('courses') }}">Ôn tập</a>
-                            {% if session.role == 'teacher' %}
-                                <a href="{{ url_for('teacher_dashboard') }}">Thống kê</a>
-                            {% else %}
-                                <a href="{{ url_for('student_dashboard') }}">Thống kê</a>
-                            {% endif %}
-                        </div>
-                    </li>
-                    
-                    <li><span>👤 {{ session.username }}</span></li>
-                    <li><a href="{{ url_for('logout') }}" class="btn-logout">Đăng xuất</a></li>
-                {% else %}
-                    <li><a href="{{ url_for('login') }}">Đăng nhập</a></li>
-                    <li><a href="{{ url_for('register') }}" class="btn-register">Đăng ký</a></li>
-                {% endif %}
+                <li><a href="#" class="nav-link">Trang chủ</a></li>
+                
+                <!-- Dropdown TN-THPT -->
+                <li class="dropdown">
+                    <a class="dropdown-toggle">TN-THPT</a>
+                    <div class="dropdown-menu-custom">
+                        <a href="#" class="nav-link">Bài tập</a>
+                        <a href="#" class="nav-link">Trắc nghiệm</a>
+                        <a href="#" class="nav-link">Ôn thi</a>
+                    </div>
+                </li>
+                
+                <!-- Dropdown Học tập -->
+                <li class="dropdown">
+                    <a class="dropdown-toggle">Học tập</a>
+                    <div class="dropdown-menu-custom">
+                        <a href="#" class="nav-link">Lớp 10</a>
+                        <a href="#" class="nav-link">Lớp 11</a>
+                        <a href="#" class="nav-link">Lớp 12</a>
+                    </div>
+                </li>
+                
+                <li><a href="#" class="nav-link">Diễn đàn</a></li>
+                
+                <!-- Chat & Hỏi đáp -->
+                <li class="dropdown">
+                    <a class="dropdown-toggle">Chat & Hỏi đáp</a>
+                    <div class="dropdown-menu-custom">
+                        <a href="#" class="nav-link">Chat</a>
+                        <a href="#" class="nav-link">Hỏi đáp AI</a>
+                    </div>
+                </li>
+                
+                <!-- Menu phụ -->
+                <li class="dropdown">
+                    <a class="dropdown-toggle">Khác</a>
+                    <div class="dropdown-menu-custom">
+                        <a href="#" class="nav-link">Học online</a>
+                        <a href="#" class="nav-link">Ôn tập</a>
+                        <a href="#" class="nav-link">Thống kê</a>
+                    </div>
+                </li>
+                
+                <li><span>👤 Học sinh</span></li>
+                <li><a href="#" class="btn-logout">Đăng xuất</a></li>
             </ul>
         </div>
     </nav>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="container mt-3">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
-
     <main class="main-content">
-        {% block content %}{% endblock %}
+        <div class="container">
+            <h1>Demo Menu Responsive</h1>
+            <p>Thử nghiệm menu trên mobile - Click vào biểu tượng 3 gạch và thử click vào "Học tập" để xem dropdown</p>
+        </div>
     </main>
 
     <footer class="footer">
@@ -545,13 +485,11 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     
     <script>
         const hamburger = document.getElementById('hamburger');
         const navMenu = document.getElementById('navMenu');
         const menuOverlay = document.getElementById('menuOverlay');
-        const navLinks = document.querySelectorAll('.nav-menu a');
 
         function toggleMenu() {
             hamburger.classList.toggle('active');
@@ -563,7 +501,8 @@
         hamburger.addEventListener('click', toggleMenu);
         menuOverlay.addEventListener('click', toggleMenu);
 
-        navLinks.forEach(link => {
+        // Chỉ đóng menu khi click vào link thực sự (không phải dropdown toggle)
+        document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', () => {
                 if (window.innerWidth <= 992) {
                     toggleMenu();
@@ -571,16 +510,27 @@
             });
         });
 
-        // Mobile dropdown toggle
-        if (window.innerWidth <= 992) {
-            document.querySelectorAll('.dropdown > a').forEach(dropdownLink => {
-                dropdownLink.addEventListener('click', function(e) {
-                    e.preventDefault();
+        // Xử lý dropdown toggle riêng - KHÔNG đóng menu
+        document.querySelectorAll('.dropdown-toggle').forEach(dropdownLink => {
+            dropdownLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // Ngăn sự kiện lan truyền
+                
+                if (window.innerWidth <= 992) {
                     const dropdown = this.parentElement;
+                    
+                    // Đóng tất cả dropdown khác
+                    document.querySelectorAll('.dropdown').forEach(d => {
+                        if (d !== dropdown) {
+                            d.classList.remove('active');
+                        }
+                    });
+                    
+                    // Toggle dropdown hiện tại
                     dropdown.classList.toggle('active');
-                });
+                }
             });
-        }
+        });
 
         window.addEventListener('resize', () => {
             if (window.innerWidth > 992) {
@@ -596,7 +546,5 @@
             }
         });
     </script>
-    
-    {% block scripts %}{% endblock %}
 </body>
 </html>
