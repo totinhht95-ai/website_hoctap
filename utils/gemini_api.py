@@ -1,9 +1,12 @@
-import google.generativeai as genai
+import os
 import re
 
-# Cấu hình API key
-GEMINI_API_KEY = "AIzaSyAI64Hvq8NFVw_jQ7CKGnkBBHubLjH8sWo"
-genai.configure(api_key=GEMINI_API_KEY)
+import google.generativeai as genai
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 def remove_markdown_formatting(text):
     """
@@ -32,6 +35,8 @@ def chat_with_gemini(user_message):
     """
     Gửi tin nhắn đến Gemini AI và nhận phản hồi
     """
+    if not GEMINI_API_KEY:
+        return "Xin lỗi, dịch vụ AI chưa được cấu hình. Vui lòng liên hệ quản trị viên để bổ sung GEMINI_API_KEY."
     try:
         model = genai.GenerativeModel('gemini-2.0-flash-exp')
         
@@ -67,6 +72,8 @@ def chat_with_context(user_message, chat_history=[]):
     Chat với context (lịch sử hội thoại)
     chat_history: [{'role': 'user', 'content': '...'}, {'role': 'assistant', 'content': '...'}]
     """
+    if not GEMINI_API_KEY:
+        return "Xin lỗi, dịch vụ AI chưa được cấu hình. Vui lòng liên hệ quản trị viên để bổ sung GEMINI_API_KEY."
     try:
         model = genai.GenerativeModel(
             'gemini-2.0-flash-exp',

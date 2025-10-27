@@ -40,6 +40,99 @@ class Database:
     def _save_json(self, filename, data):
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+    
+    def _get_exam_file(self, grade):
+        grade_str = str(grade)
+        return f'data/lop{grade_str}.json'
+
+    def load_exam_bank(self, grade):
+        filename = self._get_exam_file(grade)
+        if not os.path.exists(filename):
+            return {'exams': []}
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    data.setdefault('exams', [])
+                    exams = data.get('exams', [])
+                if isinstance(data, list):
+                    # Hỗ trợ định dạng cũ (danh sách thuần các câu hỏi)
+                    exams = data
+                    data = {'exams': exams}
+                if not isinstance(data, dict):
+                    return {'exams': []}
+
+                normalized_exams = []
+                for exam in data.get('exams', []):
+                    if not isinstance(exam, dict):
+                        continue
+                    exam.setdefault('questions', [])
+                    exam.setdefault('allow_multiple_answers', False)
+                    for question in exam.get('questions', []):
+                        if not isinstance(question, dict):
+                            continue
+                        question.setdefault('type', 'standard')
+                        if question.get('type') == 'tl2' and isinstance(question.get('correct_answer'), str):
+                            question['correct_answer'] = [question['correct_answer']]
+                    normalized_exams.append(exam)
+                data['exams'] = normalized_exams
+                return data
+        except (json.JSONDecodeError, FileNotFoundError):
+            return {'exams': []}
+
+    def save_exam_bank(self, grade, data):
+        filename = self._get_exam_file(grade)
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        if not isinstance(data, dict):
+            data = {'exams': data or []}
+        elif 'exams' not in data:
+            data['exams'] = []
+        self._save_json(filename, data)
+
+    def add_exam(self, grade, exam_data):
+        exams_data = self.load_exam_bank(grade)
+        exams = exams_data.setdefault('exams', [])
+        exams.append(exam_data)
+        self.save_exam_bank(grade, exams_data)
+        return exam_data.get('id')
+
+    def delete_exam(self, grade, exam_id):
+        exams_data = self.load_exam_bank(grade)
+        exams = exams_data.get('exams', [])
+        new_exams = [exam for exam in exams if exam.get('id') != exam_id]
+        if len(new_exams) == len(exams):
+            return False
+        exams_data['exams'] = new_exams
+        self.save_exam_bank(grade, exams_data)
+        return True
+
+    def delete_exam_results(self, exam_id, grade=None):
+        results = self._load_json('data/exam_results.json')
+        if not results:
+            return 0
+        filtered = [
+            result for result in results
+            if not (
+                result.get('exam_id') == exam_id and
+                (grade is None or str(result.get('grade')) == str(grade))
+            )
+        ]
+        removed = len(results) - len(filtered)
+        if removed:
+            self._save_json('data/exam_results.json', filtered)
+        return removed
+
+    def get_exams_by_teacher(self, teacher_id):
+        exams_by_grade = {}
+        for grade in ['10', '11', '12']:
+            bank = self.load_exam_bank(grade)
+            exams = [
+                exam for exam in bank.get('exams', [])
+                if exam.get('created_by') == teacher_id
+            ]
+            if exams:
+                exams_by_grade[grade] = exams
+        return exams_by_grade
 
     def get_all_courses(self):
         return self._load_json(self.courses_file)

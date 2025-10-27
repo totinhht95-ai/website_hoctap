@@ -1,20 +1,30 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
-from functools import wraps
+import json
 import os
-from werkzeug.utils import secure_filename
 import uuid
+from datetime import datetime, timedelta
+from functools import wraps
+
+from dotenv import load_dotenv
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
+from werkzeug.utils import secure_filename
+
+load_dotenv()
+
 from utils.auth import register_user, login_user, get_user_by_id
 from utils.database import Database
+from utils.exam_parser import ExamParseError, parse_docx_exam
 from utils.gemini_api import chat_with_gemini
-import json
-from datetime import datetime, timedelta
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here-change-in-production'
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-me')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)
-app.config['SESSION_COOKIE_SECURE'] = False  # Đổi thành True nếu dùng HTTPS
+app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE', 'false').lower() == 'true'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SAMESITE'] = os.getenv('SESSION_COOKIE_SAMESITE', 'Lax')
+
+FORUM_UPLOAD_FOLDER = os.getenv('FORUM_UPLOAD_FOLDER', 'static/uploads/forum')
+EXAM_UPLOAD_FOLDER = os.getenv('EXAM_UPLOAD_FOLDER', 'static/uploads/exams')
+ALLOWED_EXAM_EXTENSIONS = {'docx'}
 
 
 db = Database()
@@ -357,15 +367,12 @@ def submit_exercise():
                 total = len(questions)
                 
                 for i, q in enumerate(questions):
-                    user_answer = data['answers'].get(str(i), '').strip()
-                    correct_answer = q.get('correct_answer', '').strip()
+                    user_answer_raw = data['answers'].get(str(i), '')
+                    user_choice = normalize_answer_token(user_answer_raw)
+                    correct_answers = normalize_correct_answers(q.get('correct_answer'))
                     
-                    if user_answer and correct_answer:
-                        user_first_char = user_answer.split('.')[0].strip().upper()
-                        correct_first_char = correct_answer.split('.')[0].strip().upper()
-                        
-                        if user_first_char == correct_first_char:
-                            correct += 1
+                    if user_choice and user_choice in correct_answers:
+                        correct += 1
                 
                 score = round((correct / total * 100) if total > 0 else 0, 1)
                 
@@ -445,6 +452,194 @@ def add_document():
     return render_template('add_document.html')
 
 
+@app.route('/teacher/import_exam', methods=['GET', 'POST'])
+@teacher_required
+def import_exam():
+    form_data = {
+        'title': request.form.get('title', '').strip(),
+        'description': request.form.get('description', '').strip(),
+        'time_limit': request.form.get('time_limit', '').strip() or '15',
+        'grade': request.form.get('grade', '').strip(),
+        'allow_multiple': 'on' if request.form.get('allow_multiple') else 'off'
+    } if request.method == 'POST' else {
+        'title': '',
+        'description': '',
+        'time_limit': '15',
+        'grade': '12',
+        'allow_multiple': 'off'
+    }
+
+    if request.method == 'POST':
+        grade = form_data['grade']
+        title = form_data['title']
+        description = form_data['description']
+        time_limit_raw = form_data['time_limit']
+        exam_file = request.files.get('exam_file')
+        allow_multiple = form_data['allow_multiple'] == 'on'
+
+        errors = []
+        if grade not in {'10', '11', '12'}:
+            errors.append('Vui lòng chọn khối lớp hợp lệ (10, 11 hoặc 12).')
+
+        try:
+            time_limit = int(time_limit_raw)
+            if time_limit <= 0:
+                raise ValueError
+        except ValueError:
+            errors.append('Thời gian làm bài phải là số nguyên dương (phút).')
+            time_limit = 15
+
+        if not title:
+            errors.append('Vui lòng nhập tên đề thi.')
+
+        if not exam_file or not exam_file.filename:
+            errors.append('Vui lòng chọn file .docx cần import.')
+        elif not allowed_exam_file(exam_file.filename):
+            errors.append('Chỉ hỗ trợ file định dạng .docx.')
+
+        if errors:
+            for message in errors:
+                flash(message, 'danger')
+            return render_template('import_exam.html', form_data=form_data)
+
+        secure_name = secure_filename(exam_file.filename)
+        ensure_directory(EXAM_UPLOAD_FOLDER)
+        temp_filename = f"{uuid.uuid4().hex}_{secure_name}"
+        temp_path = os.path.join(EXAM_UPLOAD_FOLDER, temp_filename)
+        exam_file.save(temp_path)
+
+        parsed_questions = []
+
+        try:
+            parsed_questions = parse_docx_exam(temp_path, allow_multiple_answers=False)
+        except ExamParseError as exc:
+            error_message = str(exc)
+            if 'nhiều đáp án đúng' in error_message.lower():
+                try:
+                    parsed_questions = parse_docx_exam(temp_path, allow_multiple_answers=True)
+                except ExamParseError as re_exc:
+                    flash(f'Lỗi khi đọc file đề: {re_exc}', 'danger')
+                    os.remove(temp_path)
+                    return render_template('import_exam.html', form_data=form_data)
+                except Exception as re_exc:
+                    flash(f'Lỗi không xác định khi xử lý file: {re_exc}', 'danger')
+                    os.remove(temp_path)
+                    return render_template('import_exam.html', form_data=form_data)
+            else:
+                flash(f'Lỗi khi đọc file đề: {exc}', 'danger')
+                os.remove(temp_path)
+                return render_template('import_exam.html', form_data=form_data)
+        except Exception as exc:
+            flash(f'Lỗi không xác định khi xử lý file: {exc}', 'danger')
+            os.remove(temp_path)
+            return render_template('import_exam.html', form_data=form_data)
+        finally:
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
+
+        if not parsed_questions:
+            flash('Không tìm thấy câu hỏi trắc nghiệm nào trong file.', 'danger')
+            return render_template('import_exam.html', form_data=form_data)
+
+        questions_with_multiple = [
+            item.get('number')
+            for item in parsed_questions
+            if len(normalize_correct_answers(item.get('correct_answer'))) > 1
+        ]
+
+        if questions_with_multiple and not allow_multiple:
+            question_list = ', '.join(str(num) for num in questions_with_multiple[:5])
+            more_suffix = '...' if len(questions_with_multiple) > 5 else ''
+            flash(
+                f'Đề thi có các câu {question_list}{more_suffix} được đánh dấu nhiều đáp án đúng. '
+                'Vui lòng bật tùy chọn "Cho phép nhiều đáp án đúng" trước khi import.',
+                'warning'
+            )
+            form_data['allow_multiple'] = 'on'
+            return render_template('import_exam.html', form_data=form_data)
+
+        questions = []
+        has_tl2_question = False
+        for idx, item in enumerate(parsed_questions, start=1):
+            options = item.get('options', {})
+            correct_answer = item.get('correct_answer')
+            question_type = item.get('type', 'tl1')
+
+            if not options or len(options) < 2:
+                flash(f'Câu {item.get("number", idx)} không có đủ lựa chọn.', 'danger')
+                return render_template('import_exam.html', form_data=form_data)
+
+            if question_type == 'tl2':
+                has_tl2_question = True
+                if len(options) != 4:
+                    flash(f'Câu {item.get("number", idx)} (TL2) cần đúng 4 ý để đánh giá Đúng/Sai.', 'danger')
+                    return render_template('import_exam.html', form_data=form_data)
+
+            option_keys = {key.upper(): key for key in options.keys()}
+            correct_tokens = normalize_correct_answers(correct_answer)
+            if not correct_tokens:
+                flash(f'Không xác định được đáp án đúng cho câu {item.get("number", idx)}.', 'danger')
+                return render_template('import_exam.html', form_data=form_data)
+
+            invalid_tokens = [token for token in correct_tokens if token not in option_keys]
+            if invalid_tokens:
+                flash(
+                    f'Đáp án {", ".join(invalid_tokens)} của câu {item.get("number", idx)} không trùng với lựa chọn A/B/C/D.',
+                    'danger'
+                )
+                return render_template('import_exam.html', form_data=form_data)
+
+            def convert_token(token):
+                # Map back to original key casing (A vs a) if needed
+                return option_keys.get(token, token)
+
+            if question_type == 'tl2':
+                normalized_correct = [convert_token(token) for token in sorted(correct_tokens)]
+            else:
+                if len(correct_tokens) > 1:
+                    normalized_correct = [convert_token(token) for token in sorted(correct_tokens)]
+                    if len(normalized_correct) == 1:
+                        normalized_correct = normalized_correct[0]
+                else:
+                    normalized_correct = convert_token(next(iter(correct_tokens)))
+
+            questions.append({
+                'id': item.get('number', idx),
+                'number': item.get('number', idx),
+                'question': item.get('question', '').strip(),
+                'options': options,
+                'correct_answer': normalized_correct,
+                'explanation': item.get('explanation', '').strip(),
+                'type': question_type
+            })
+
+        exam_id = f"exam_{grade}_{uuid.uuid4().hex[:6]}"
+        exam_record = {
+            'id': exam_id,
+            'title': title,
+            'description': description,
+            'time_limit': time_limit,
+            'questions': questions,
+            'allow_multiple_answers': bool(questions_with_multiple or has_tl2_question),
+            'created_by': session.get('user_id'),
+            'created_by_name': session.get('username'),
+            'created_at': datetime.now().isoformat()
+        }
+
+        try:
+            db.add_exam(grade, exam_record)
+        except Exception as exc:
+            flash(f'Không thể lưu đề thi: {exc}', 'danger')
+            return render_template('import_exam.html', form_data=form_data)
+
+        flash(f'Đã tạo đề thi "{title}" với {len(questions)} câu hỏi cho khối {grade}.', 'success')
+        return redirect(url_for('tracnghiem'))
+
+    return render_template('import_exam.html', form_data=form_data)
+
+
 @app.route('/chatbot')
 @login_required
 def chatbot():
@@ -520,8 +715,76 @@ def students_progress():
                 'percentage': percentage,
                 'last_updated': prog.get('last_updated', 'Chưa cập nhật')
             })
-    
+
     return render_template('student_progress.html', progress=progress_with_details)
+
+@app.route('/teacher/exams')
+@login_required
+@teacher_required
+def teacher_exams():
+    teacher_id = session.get('user_id')
+    exams_by_grade = {}
+
+    for grade in ['10', '11', '12']:
+        bank = db.load_exam_bank(grade)
+        grade_exams = []
+
+        for exam in bank.get('exams', []):
+            exam_copy = {
+                'id': exam.get('id'),
+                'title': exam.get('title', 'Không có tiêu đề'),
+                'description': exam.get('description', ''),
+                'time_limit': exam.get('time_limit', 15),
+                'question_count': len(exam.get('questions', [])),
+                'created_at': exam.get('created_at'),
+                'allow_multiple_answers': exam.get('allow_multiple_answers', False),
+                'created_by': exam.get('created_by'),
+                'created_by_name': exam.get('created_by_name', 'Không rõ'),
+                'grade': grade,
+            }
+            exam_copy['is_owner'] = exam_copy['created_by'] == teacher_id or exam_copy['created_by'] is None
+            grade_exams.append(exam_copy)
+
+        exams_by_grade[grade] = grade_exams
+
+    return render_template('teacher_exams.html',
+                           exams_by_grade=exams_by_grade,
+                           username=session.get('username'))
+
+@app.route('/teacher/delete_exam', methods=['POST'])
+@login_required
+@teacher_required
+def delete_exam():
+    try:
+        data = request.get_json() or {}
+        grade = str(data.get('grade', '')).strip()
+        exam_id = data.get('exam_id')
+
+        if grade not in {'10', '11', '12'} or not exam_id:
+            return jsonify({'success': False, 'message': 'Thiếu thông tin đề thi'}), 400
+
+        bank = db.load_exam_bank(grade)
+        exam = next((e for e in bank.get('exams', []) if e.get('id') == exam_id), None)
+
+        if not exam:
+            return jsonify({'success': False, 'message': 'Không tìm thấy đề thi'}), 404
+
+        owner_id = exam.get('created_by')
+        if owner_id and owner_id != session.get('user_id'):
+            return jsonify({'success': False, 'message': 'Bạn chỉ có thể xoá đề thi do mình tạo'}), 403
+
+        if not db.delete_exam(grade, exam_id):
+            return jsonify({'success': False, 'message': 'Không thể xoá đề thi'}), 500
+
+        removed_results = db.delete_exam_results(exam_id, grade)
+
+        return jsonify({
+            'success': True,
+            'message': 'Đã xoá đề thi và xoá kết quả liên quan.' if removed_results else 'Đã xoá đề thi.',
+            'removed_results': removed_results
+        })
+    except Exception as exc:
+        return jsonify({'success': False, 'message': f'Lỗi: {exc}'}), 500
 
 
 @app.route('/teacher/view_submissions')
@@ -683,12 +946,20 @@ def lam_bai_tracnghiem(grade, exam_id):
             """)
             
 
+            for question in exam.get('questions', []):
+                if isinstance(question, dict):
+                    question.setdefault('type', 'tl1')
+                    if question.get('type') == 'tl2' and isinstance(question.get('correct_answer'), str):
+                        question['correct_answer'] = [question['correct_answer']]
+            has_tl2 = any(q.get('type') == 'tl2' for q in exam.get('questions', []))
+
             return render_template('baitap.html',
                                  exam=exam,
                                  grade=grade,
                                  time_limit=time_limit,
                                  remaining_time=remaining_time,
-                                 username=session.get('username'))
+                                 username=session.get('username'),
+                                 has_tl2=has_tl2)
     
     except FileNotFoundError:
         flash('⚠️ Không tìm thấy dữ liệu đề thi', 'danger')
@@ -923,27 +1194,108 @@ def nop_bai_tracnghiem():
                 }), 403
             questions = exam.get('questions', [])
             total_questions = len(questions)
-            correct_count = 0
+            total_points = 0.0
+            full_correct_count = 0
             wrong_answers = []
-            
+            question_breakdown = []
+
             for question in questions:
-                q_id = str(question['id'])
-                correct_answer = question['correct_answer'].strip()
-                user_answer = answers.get(q_id, '').strip()
-                
-                if user_answer == correct_answer:
-                    correct_count += 1
-                else:
-                    wrong_answers.append({
-                        'question_number': question['number'],
-                        'question_text': question['question'],
-                        'user_answer': user_answer if user_answer else 'Không trả lời',
-                        'correct_answer': correct_answer,
-                        'explanation': question.get('explanation', '')
+                q_id = str(question.get('id'))
+                question_type = question.get('type', 'tl1')
+                options = question.get('options', {}) or {}
+                correct_answer_value = question.get('correct_answer')
+                correct_choices = normalize_correct_answers(correct_answer_value)
+
+                option_token_map = {normalize_answer_token(key): key for key in options.keys()}
+
+                if question_type == 'tl2':
+                    response_payload = answers.get(q_id, {})
+                    if isinstance(response_payload, dict):
+                        selected_true_raw = response_payload.get('selected_true', [])
+                        option_states_raw = response_payload.get('option_states', {})
+                    elif isinstance(response_payload, list):
+                        selected_true_raw = response_payload
+                        option_states_raw = {}
+                    else:
+                        selected_true_raw = response_payload if response_payload else []
+                        option_states_raw = {}
+
+                    if isinstance(selected_true_raw, str):
+                        selected_true_raw = [selected_true_raw]
+
+                    student_true = {
+                        normalize_answer_token(choice)
+                        for choice in selected_true_raw
+                        if normalize_answer_token(choice) in option_token_map
+                    }
+                    expected_true = {token for token in correct_choices if token in option_token_map}
+                    answered_tokens = {
+                        normalize_answer_token(key)
+                        for key in (option_states_raw.keys() if isinstance(option_states_raw, dict) else [])
+                    }
+                    all_tokens = {normalize_answer_token(key) for key in options.keys()}
+                    missing_tokens = all_tokens - answered_tokens
+
+                    mistakes = len(expected_true.symmetric_difference(student_true))
+                    extra_mistakes = len(missing_tokens - expected_true)
+                    mistakes = min(len(all_tokens), mistakes + extra_mistakes)
+
+                    question_point = calculate_tl2_score(mistakes)
+
+                    if question_point >= 0.999:
+                        full_correct_count += 1
+                    else:
+                        wrong_answers.append({
+                            'question_number': question.get('number'),
+                            'question_text': question.get('question'),
+                            'question_type': 'tl2',
+                            'student_true': [option_token_map.get(token, token) for token in sorted(student_true)],
+                            'expected_true': [option_token_map.get(token, token) for token in sorted(expected_true)],
+                            'options': options,
+                            'mistakes': mistakes,
+                            'option_states': option_states_raw,
+                            'missing_choices': [option_token_map.get(token, token) for token in sorted(missing_tokens)],
+                            'explanation': question.get('explanation', '')
+                        })
+
+                    question_breakdown.append({
+                        'question_number': question.get('number'),
+                        'type': 'tl2',
+                        'score': question_point,
+                        'mistakes': mistakes
                     })
-            
-            score = round((correct_count / total_questions) * 10, 2) if total_questions > 0 else 0
-            
+                else:
+                    response_payload = answers.get(q_id, '')
+                    if isinstance(response_payload, dict):
+                        user_choice = normalize_answer_token(response_payload.get('selected'))
+                    else:
+                        user_choice = normalize_answer_token(response_payload)
+
+                    if user_choice and user_choice in correct_choices:
+                        question_point = 1.0
+                        full_correct_count += 1
+                    else:
+                        question_point = 0.0
+                        wrong_answers.append({
+                            'question_number': question.get('number'),
+                            'question_text': question.get('question'),
+                            'question_type': 'standard',
+                            'user_answer': user_choice if user_choice else 'Không trả lời',
+                            'correct_answer': format_correct_answer(correct_answer_value),
+                            'explanation': question.get('explanation', '')
+                        })
+
+                    question_breakdown.append({
+                        'question_number': question.get('number'),
+                        'type': 'standard',
+                        'score': question_point,
+                        'selected': user_choice
+                    })
+
+                total_points += question_point
+
+            score = round((total_points / total_questions) * 10, 2) if total_questions > 0 else 0
+
 
             session.pop(session_key, None)
             session.modified = True
@@ -956,8 +1308,10 @@ def nop_bai_tracnghiem():
                 'exam_id': exam_id,
                 'exam_title': exam.get('title', ''),
                 'score': score,
-                'correct_count': correct_count,
+                'correct_count': full_correct_count,
                 'total_questions': total_questions,
+                'total_points': round(total_points, 2),
+                'question_breakdown': question_breakdown,
                 'submitted_at': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
                 'time_spent_seconds': int(elapsed_seconds)  # 
             }
@@ -985,8 +1339,9 @@ def nop_bai_tracnghiem():
             return jsonify({
                 'success': True,
                 'score': score,
-                'correct_count': correct_count,
+                'correct_count': full_correct_count,
                 'total_questions': total_questions,
+                'total_points': round(total_points, 2),
                 'wrong_answers': wrong_answers,
                 'message': 'Nộp bài thành công'
             })
@@ -1114,12 +1469,49 @@ def ket_qua_tracnghiem(grade, exam_id):
 ##############
 
 
-UPLOAD_FOLDER = 'static/uploads/forum'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'docx', 'txt', 'zip', 'rar'}
 MAX_FILE_SIZE = 10 * 1024 * 1024
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def allowed_exam_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXAM_EXTENSIONS
+
+def ensure_directory(path):
+    os.makedirs(path, exist_ok=True)
+
+def normalize_answer_token(value):
+    if value is None:
+        return ''
+    token = str(value).strip()
+    if not token:
+        return ''
+    token = token.split('.')[0]
+    return token.strip().upper()
+
+def normalize_correct_answers(value):
+    if isinstance(value, list):
+        tokens = {normalize_answer_token(v) for v in value}
+        return {t for t in tokens if t}
+    token = normalize_answer_token(value)
+    return {token} if token else set()
+
+def format_correct_answer(value):
+    if isinstance(value, list):
+        return ', '.join(str(v).strip() for v in value if str(v).strip())
+    return str(value).strip()
+
+def calculate_tl2_score(mistakes_count):
+    if mistakes_count <= 0:
+        return 1.0
+    if mistakes_count == 1:
+        return 0.5
+    if mistakes_count == 2:
+        return 0.25
+    if mistakes_count == 3:
+        return 0.1
+    return 0.0
 
 @app.route('/forum')
 @login_required
@@ -1197,8 +1589,8 @@ def forum_create_post():
                         filename = secure_filename(file.filename)
                         unique_filename = f"{uuid.uuid4().hex[:8]}_{filename}"
                         
-                        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-                        file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+                        os.makedirs(FORUM_UPLOAD_FOLDER, exist_ok=True)
+                        file_path = os.path.join(FORUM_UPLOAD_FOLDER, unique_filename)
                         file.save(file_path)
                         
                         file_size = os.path.getsize(file_path)
@@ -1268,8 +1660,8 @@ def forum_edit_post(post_id):
                         filename = secure_filename(file.filename)
                         unique_filename = f"{uuid.uuid4().hex[:8]}_{filename}"
                         
-                        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-                        file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+                        os.makedirs(FORUM_UPLOAD_FOLDER, exist_ok=True)
+                        file_path = os.path.join(FORUM_UPLOAD_FOLDER, unique_filename)
                         file.save(file_path)
                         
                         file_size = os.path.getsize(file_path)
@@ -1351,8 +1743,8 @@ def forum_add_comment(post_id):
                     filename = secure_filename(file.filename)
                     unique_filename = f"{uuid.uuid4().hex[:8]}_{filename}"
                     
-                    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-                    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+                    os.makedirs(FORUM_UPLOAD_FOLDER, exist_ok=True)
+                    file_path = os.path.join(FORUM_UPLOAD_FOLDER, unique_filename)
                     file.save(file_path)
                     
                     file_size = os.path.getsize(file_path)
@@ -1502,9 +1894,14 @@ def delete_chat_message(message_id):
         return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'})
 ################
 if __name__ == '__main__':
-    os.makedirs('data', exist_ok=True)
-    os.makedirs('static/css', exist_ok=True)
-    os.makedirs('static/js', exist_ok=True)
-    os.makedirs('templates', exist_ok=True)
-    
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    ensure_directory('data')
+    ensure_directory('static/css')
+    ensure_directory('static/js')
+    ensure_directory('templates')
+    ensure_directory(FORUM_UPLOAD_FOLDER)
+    ensure_directory(EXAM_UPLOAD_FOLDER)
+
+    port = int(os.getenv('PORT', os.getenv('FLASK_RUN_PORT', 5001)))
+    debug_mode = os.getenv('FLASK_DEBUG', 'true').lower() == 'true'
+
+    app.run(debug=debug_mode, host='0.0.0.0', port=port)
