@@ -836,7 +836,7 @@ def internal_error(error):
 
 
 ########################
-#
+###############33
 @app.route('/tracnghiem/lam-bai/<grade>/<exam_id>')
 @login_required
 def lam_bai_tracnghiem(grade, exam_id):
