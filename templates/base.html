@@ -45,6 +45,9 @@
         }
 
         .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
             font-size: 1.75rem;
             font-weight: 700;
             color: white;
@@ -55,9 +58,23 @@
             z-index: 1001;
         }
 
+        .logo img {
+            height: 45px;
+            width: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.3));
+        }
+
         .logo:hover {
             transform: scale(1.05);
             text-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .logo:hover img {
+            filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.5));
+            transform: rotate(5deg);
         }
 
         .hamburger {
@@ -417,6 +434,11 @@
             .logo {
                 font-size: 1.5rem;
             }
+
+            .logo img {
+                height: 38px;
+                width: 38px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -430,6 +452,11 @@
 
             .logo {
                 font-size: 1.35rem;
+            }
+
+            .logo img {
+                height: 35px;
+                width: 35px;
             }
         }
 
@@ -457,7 +484,10 @@
     
     <nav class="navbar">
         <div class="container">
-            <a href="{{ url_for('index') }}" class="logo">Tin Học THPT</a>
+            <a href="{{ url_for('index') }}" class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Tin Học THPT">
+                <span>Tin Học THPT</span>
+            </a>
             
             <div class="hamburger" id="hamburger">
                 <span></span>
