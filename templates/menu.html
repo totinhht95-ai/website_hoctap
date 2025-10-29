@@ -1,0 +1,665 @@
+{% extends "base.html" %}
+
+{% block title %}Trang chủ - Học Tin THPT{% endblock %}
+
+{% block content %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        color: white;
+        padding: 5rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="none"/><circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/></svg>');
+        opacity: 0.3;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .hero-subtitle {
+        font-size: 1.4rem;
+        margin-bottom: 2.5rem;
+        opacity: 0.95;
+        animation: fadeInUp 1s ease-out;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: fadeInUp 1.2s ease-out;
+    }
+
+    .btn-hero {
+        padding: 1rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-hero-primary {
+        background: white;
+        color: #667eea;
+    }
+
+    .btn-hero-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-hero-secondary {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid white;
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-hero-secondary:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-3px);
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .features-section {
+        padding: 5rem 0;
+        background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .section-title {
+        text-align: center;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 3rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.15);
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid transparent;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.25);
+        border-color: #667eea;
+    }
+
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        color: white;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+    }
+
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #2d3748;
+    }
+
+    .feature-description {
+        color: #4a5568;
+        line-height: 1.7;
+        font-size: 1rem;
+    }
+
+    .classes-section {
+        padding: 5rem 0;
+        background: white;
+    }
+
+    .classes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2.5rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    .class-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 15px 50px rgba(102, 126, 234, 0.3);
+        transition: all 0.4s ease;
+        position: relative;
+    }
+
+    .class-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(240, 147, 251, 0.2) 0%, rgba(245, 175, 25, 0.2) 100%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+
+    .class-card:hover {
+        transform: translateY(-15px) scale(1.02);
+        box-shadow: 0 25px 70px rgba(102, 126, 234, 0.4);
+    }
+
+    .class-card:hover::after {
+        opacity: 1;
+    }
+
+    .class-card:nth-child(2) {
+        background: linear-gradient(135deg, #f093fb 0%, #f5af19 100%);
+    }
+
+    .class-card:nth-child(3) {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .class-header {
+        padding: 2.5rem;
+        text-align: center;
+        color: white;
+        position: relative;
+        z-index: 1;
+    }
+
+    .class-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        display: block;
+        filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.3));
+    }
+
+    .class-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    .class-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
+
+    .class-body {
+        padding: 2rem 2.5rem;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 1;
+    }
+
+    .class-features {
+        list-style: none;
+        margin-bottom: 2rem;
+    }
+
+    .class-features li {
+        color: white;
+        padding: 0.75rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1rem;
+    }
+
+    .class-features li::before {
+        content: '✓';
+        width: 24px;
+        height: 24px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .btn-class {
+        width: 100%;
+        padding: 1rem;
+        background: white;
+        color: #667eea;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+    }
+
+    .btn-class:hover {
+        background: #f0f0f0;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
+    }
+
+    .stats-section {
+        padding: 5rem 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="none"/><path d="M0 50 Q25 30, 50 50 T100 50" stroke="rgba(255,255,255,0.05)" stroke-width="2" fill="none"/></svg>');
+        opacity: 0.5;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 3rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .stat-number {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .stat-label {
+        font-size: 1.2rem;
+        opacity: 0.95;
+    }
+
+    .cta-section {
+        padding: 5rem 0;
+        background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+        text-align: center;
+    }
+
+    .cta-content {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    .cta-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .cta-description {
+        font-size: 1.2rem;
+        color: #4a5568;
+        margin-bottom: 2.5rem;
+        line-height: 1.7;
+    }
+
+    .cta-buttons {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-cta {
+        padding: 1rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-cta-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-cta-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-cta-secondary {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-cta-secondary:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-3px);
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+        }
+
+        .features-grid,
+        .classes-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-buttons,
+        .cta-buttons {
+            flex-direction: column;
+        }
+
+        .btn-hero,
+        .btn-cta {
+            width: 100%;
+            max-width: 300px;
+        }
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title"> Học Tin Học THPT</h1>
+        <p class="hero-subtitle">Nền tảng học tập trực tuyến hiện đại - Nơi khơi nguồn đam mê công nghệ và lập trình</p>
+        <div class="hero-buttons">
+            <a href="{{ url_for('lop10') }}" class="btn-hero btn-hero-primary">
+                <i class="fas fa-rocket"></i> Bắt đầu học ngay
+            </a>
+            <a href="{{ url_for('forum') }}" class="btn-hero btn-hero-secondary">
+                <i class="fas fa-users"></i> Tham gia cộng đồng
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <h2 class="section-title"> Tính năng nổi bật</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <h3 class="feature-title">Bài giảng chất lượng</h3>
+            <p class="feature-description">Nội dung được biên soạn chi tiết, dễ hiểu, phù hợp với chương trình THPT từ lớp 10 đến 12.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <h3 class="feature-title">Bài tập đa dạng</h3>
+            <p class="feature-description">Hệ thống bài tập phong phú với nhiều mức độ, giúp củng cố kiến thức và rèn luyện kỹ năng.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-clipboard-check"></i>
+            </div>
+            <h3 class="feature-title">Trắc nghiệm online</h3>
+            <p class="feature-description">Làm bài trắc nghiệm trực tuyến, tự động chấm điểm và nhận phản hồi ngay lập tức.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h3 class="feature-title">Trợ lý AI thông minh</h3>
+            <p class="feature-description">Chatbot AI hỗ trợ giải đáp thắc mắc, hướng dẫn học tập 24/7.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-comments"></i>
+            </div>
+            <h3 class="feature-title">Diễn đàn thảo luận</h3>
+            <p class="feature-description">Không gian trao đổi, chia sẻ kinh nghiệm và học hỏi lẫn nhau trong cộng đồng.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="feature-title">Theo dõi tiến độ</h3>
+            <p class="feature-description">Thống kê chi tiết quá trình học tập, đánh giá năng lực và đề xuất lộ trình phù hợp.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Classes Section -->
+<section class="classes-section">
+    <h2 class="section-title">📚Chương trình học</h2>
+    <div class="classes-grid">
+        <div class="class-card">
+            <div class="class-header">
+                <span class="class-icon"></span>
+                <h3 class="class-title">Lớp 10</h3>
+                <p class="class-subtitle">Nền tảng tin học cơ bản</p>
+            </div>
+            <div class="class-body">
+                <ul class="class-features">
+                    <li>Giới thiệu về tin học và máy tính</li>
+                    <li>Hệ điều hành và phần mềm ứng dụng</li>
+                    <li>Xử lý văn bản và bảng tính</li>
+                    <li>Lập trình Pascal cơ bản</li>
+                    <li>Thuật toán và lưu đồ</li>
+                </ul>
+                <a href="{{ url_for('lop10') }}" class="btn-class">
+                    <i class="fas fa-arrow-right"></i> Khám phá ngay
+                </a>
+            </div>
+        </div>
+
+        <div class="class-card">
+            <div class="class-header">
+                <span class="class-icon"></span>
+                <h3 class="class-title">Lớp 11</h3>
+                <p class="class-subtitle">Nâng cao kỹ năng lập trình</p>
+            </div>
+            <div class="class-body">
+                <ul class="class-features">
+                    <li>Cấu trúc dữ liệu nâng cao</li>
+                    <li>Mảng và xử lý mảng</li>
+                    <li>Chuỗi ký tự và xử lý chuỗi</li>
+                    <li>Thủ tục và hàm</li>
+                    <li>File và xử lý file</li>
+                </ul>
+                <a href="{{ url_for('lop11') }}" class="btn-class">
+                    <i class="fas fa-arrow-right"></i> Khám phá ngay
+                </a>
+            </div>
+        </div>
+
+        <div class="class-card">
+            <div class="class-header">
+                <span class="class-icon"></span>
+                <h3 class="class-title">Lớp 12</h3>
+                <p class="class-subtitle">Hoàn thiện và ôn thi THPT</p>
+            </div>
+            <div class="class-body">
+                <ul class="class-features">
+                    <li>Lập trình hướng đối tượng</li>
+                    <li>Cơ sở dữ liệu và SQL</li>
+                    <li>Mạng máy tính và internet</li>
+                    <li>Ôn tập tổng hợp</li>
+                    <li>Luyện đề thi THPT Quốc gia</li>
+                </ul>
+                <a href="{{ url_for('lop12') }}" class="btn-class">
+                    <i class="fas fa-arrow-right"></i> Khám phá ngay
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <h2 class="section-title" style="color: white; -webkit-text-fill-color: white;"> Thành tựu của chúng tôi</h2>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">1000+</div>
+            <div class="stat-label">Học viên</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">500+</div>
+            <div class="stat-label">Bài giảng</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">2000+</div>
+            <div class="stat-label">Bài tập</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">98%</div>
+            <div class="stat-label">Hài lòng</div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="cta-content">
+        <h2 class="cta-title"> Sẵn sàng bắt đầu hành trình học tập?</h2>
+        <p class="cta-description">
+            Tham gia cùng hàng nghìn học sinh đang học tập và phát triển kỹ năng tin học. 
+            Đăng ký ngay hôm nay để trải nghiệm nền tảng học tập hiện đại nhất!
+        </p>
+        <div class="cta-buttons">
+            <a href="{{ url_for('chatbot') }}" class="btn-cta btn-cta-primary">
+                <i class="fas fa-robot"></i> Trò chuyện với AI
+            </a>
+            <a href="{{ url_for('tracnghiem') }}" class="btn-cta btn-cta-secondary">
+                <i class="fas fa-pen"></i> Làm bài trắc nghiệm
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

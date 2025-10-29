@@ -401,12 +401,18 @@ def submit_exercise():
 @app.route('/documents')
 @login_required
 def documents():
-    # Lấy các tham số lọc từ query string
-    grade_filter = request.args.get('grade', 'all')  # 10, 11, 12, hoặc all
-    type_filter = request.args.get('type', 'all')    # document, lecture, exam, hoặc all
+    grade_filter = request.args.get('grade', 'all')
+    type_filter = request.args.get('type', 'all')
     
     docs = db.get_all_documents()
-
+    
+    # ✅ Thêm giá trị mặc định cho documents cũ
+    for doc in docs:
+        if 'grade' not in doc or not doc.get('grade'):
+            doc['grade'] = '12'  # Mặc định lớp 12
+        if 'doc_type' not in doc or not doc.get('doc_type'):
+            doc['doc_type'] = 'document'  # Mặc định là tài liệu
+    
     if grade_filter != 'all':
         docs = [d for d in docs if str(d.get('grade')) == grade_filter]
     if type_filter != 'all':
@@ -423,6 +429,7 @@ def documents():
                          current_type=type_filter,
                          grade_labels=GRADE_LABELS,
                          grade_choices=AVAILABLE_GRADES)
+                         ################################################33
 
 
 
@@ -1536,6 +1543,7 @@ def forum():
                          username=session.get('username'))
 
 
+######################
 @app.route('/forum/post/<post_id>')
 @login_required
 def forum_post_detail(post_id):
@@ -1562,7 +1570,9 @@ def forum_post_detail(post_id):
                          post=post,
                          comments=comments,
                          is_author=is_author,
+                         current_user_id=session['user_id'],  # ✅ THÊM DÒNG NÀY
                          username=session.get('username'))
+                         ####################################################3
 
 
 @app.route('/forum/create', methods=['GET', 'POST'])
@@ -1729,6 +1739,7 @@ def forum_add_comment(post_id):
             return jsonify({'success': False, 'message': 'Bài viết không tồn tại'})
         
         content = request.form.get('content', '').strip()
+        parent_id = request.form.get('parent_id', '').strip()###########################################
         
         if not content:
             return jsonify({'success': False, 'message': 'Vui lòng nhập nội dung bình luận'})
@@ -1764,7 +1775,8 @@ def forum_add_comment(post_id):
             'author_name': session.get('username', 'Unknown'),
             'author_role': user.get('role', 'student') if user else 'student',
             'content': content,
-            'attachments': attachments
+            'attachments': attachments,
+            'parent_id': parent_id if parent_id else None ###########################################################33
         }
         
         comment_id = db.add_comment(comment_data)
@@ -1933,6 +1945,11 @@ def onthi_tai_lieu():
 def onthi_de_chinh_thuc():
     return render_template('onthi/de_chinh_thuc.html', username=session.get('username'))
 ################
+@app.route('/xinchao')
+@login_required
+def xinchao():
+    return render_template('menu.html', username=session.get('username'))
+#########################3
 if __name__ == '__main__':
     ensure_directory('data')
     ensure_directory('static/css')

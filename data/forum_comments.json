@@ -1,1 +1,22 @@
-[]
+[
+  {
+    "id": "comment_0001",
+    "post_id": "post_0001",
+    "author_id": "4",
+    "author_name": "tuan",
+    "author_role": "student",
+    "content": "hihi",
+    "created_at": "2025-10-29T18:54:34.112491",
+    "attachments": []
+  },
+  {
+    "id": "comment_0002",
+    "post_id": "post_0001",
+    "author_id": "1",
+    "author_name": "colan",
+    "author_role": "teacher",
+    "content": "chào mấy bạn",
+    "created_at": "2025-10-29T20:11:44.150739",
+    "attachments": []
+  }
+]

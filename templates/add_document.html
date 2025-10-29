@@ -19,8 +19,31 @@
             <small class="form-hint">Hỗ trợ: YouTube, Google Drive, hoặc link trực tiếp</small>
         </div>
 
+        <!-- ✅ THÊM MỚI: Chọn lớp học -->
         <div class="form-group">
-            <label for="docType">Loại tài liệu:</label>
+            <label for="docGrade">Lớp học: <span class="required">*</span></label>
+            <select id="docGrade" required>
+                <option value="">Chọn lớp</option>
+                <option value="10">Lớp 10</option>
+                <option value="11">Lớp 11</option>
+                <option value="12">Lớp 12</option>
+                <option value="TN-THPT">Lớp TN-THPT</option>
+            </select>
+        </div>
+
+        <!-- ✅ THÊM MỚI: Loại tài liệu -->
+        <div class="form-group">
+            <label for="docTypeCategory">Loại tài liệu: <span class="required">*</span></label>
+            <select id="docTypeCategory" required>
+                <option value="">Chọn loại</option>
+                <option value="document">📄 Tài liệu</option>
+                <option value="lecture">📚 Bài giảng</option>
+                <option value="exam">📝 Bộ đề thi</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="docType">Loại link:</label>
             <select id="docType">
                 <option value="auto">Tự động nhận diện</option>
                 <option value="youtube">Video YouTube</option>
@@ -116,19 +139,35 @@ document.getElementById('addDocumentForm').addEventListener('submit', async func
     
     const title = document.getElementById('docTitle').value.trim();
     const url = document.getElementById('docUrl').value.trim();
-    const type = document.getElementById('docType').value;
+    const grade = document.getElementById('docGrade').value;
+    const docType = document.getElementById('docTypeCategory').value;
+    const linkType = document.getElementById('docType').value;
     const description = document.getElementById('docDescription').value.trim();
     const category = document.getElementById('docCategory').value;
     
+    // ✅ Validate các trường bắt buộc
     if (!title || !url) {
         alert('Vui lòng nhập đầy đủ tiêu đề và link!');
         return;
     }
     
+    if (!grade) {
+        alert('⚠️ Vui lòng chọn lớp học!');
+        return;
+    }
+    
+    if (!docType) {
+        alert('⚠️ Vui lòng chọn loại tài liệu!');
+        return;
+    }
+    
+    // ✅ Gửi dữ liệu với grade và doc_type
     const data = {
         title: title,
         url: url,
-        type: type === 'auto' ? detectType(url) : type,
+        grade: grade,                    // ✅ Thêm grade
+        doc_type: docType,               // ✅ Thêm doc_type
+        link_type: linkType === 'auto' ? detectType(url) : linkType,
         description: description,
         category: category
     };
@@ -167,6 +206,22 @@ function detectType(url) {
 </script>
 
 <style>
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.container h1 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 30px;
+}
+
 .form-group {
     margin-bottom: 20px;
 }
@@ -190,6 +245,7 @@ function detectType(url) {
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 14px;
+    box-sizing: border-box;
 }
 
 .form-group input:focus,
@@ -240,6 +296,7 @@ function detectType(url) {
     font-size: 14px;
     text-decoration: none;
     display: inline-block;
+    transition: all 0.3s;
 }
 
 .btn-primary {
@@ -258,6 +315,15 @@ function detectType(url) {
 
 .btn-secondary:hover {
     background-color: #545b62;
+}
+
+/* Highlight cho trường bắt buộc khi chưa điền */
+select:invalid {
+    color: #999;
+}
+
+select option[value=""] {
+    color: #999;
 }
 </style>
 {% endblock %}

@@ -51,11 +51,10 @@
             font-size: 1.75rem;
             font-weight: 700;
             color: white;
-            text-decoration: none;
             letter-spacing: -0.5px;
-            transition: all 0.3s ease;
             text-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
             z-index: 1001;
+            cursor: default;
         }
 
         .logo img {
@@ -63,18 +62,7 @@
             width: 45px;
             border-radius: 50%;
             object-fit: cover;
-            transition: all 0.3s ease;
             filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.3));
-        }
-
-        .logo:hover {
-            transform: scale(1.05);
-            text-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
-        }
-
-        .logo:hover img {
-            filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.5));
-            transform: rotate(5deg);
         }
 
         .hamburger {
@@ -484,10 +472,10 @@
     
     <nav class="navbar">
         <div class="container">
-            <a href="{{ url_for('index') }}" class="logo">
+            <div class="logo">
                 <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Tin Học THPT">
                 <span>Tin Học THPT</span>
-            </a>
+            </div>
             
             <div class="hamburger" id="hamburger">
                 <span></span>
@@ -497,7 +485,7 @@
             
             <ul class="nav-menu" id="navMenu">
                 {% if session.user_id %}
-                    <li><a href="{{ url_for('index') }}">Trang chủ</a></li>
+                    <li><a href="{{ url_for('xinchao') }}">Trang chủ</a></li>
                     <!-- Dropdown Lớp học -->
                     <li class="dropdown">
                         <a>Học tập</a>

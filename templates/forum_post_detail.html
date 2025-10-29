@@ -3,162 +3,813 @@
 {% block title %}{{ post.title }} - Diễn đàn{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="mb-3">
-        <a href="{{ url_for('forum') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Quay lại danh sách
-        </a>
-    </div>
+<style>
+    .forum-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
 
-    <div class="card">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                    <h3>{{ post.title }}</h3>
-                    <div class="text-muted small">
-                        <span class="me-3">
-                            <i class="fas fa-user"></i>
-                            <strong>{{ post.author_name }}</strong>
-                            {% if post.author_role == 'teacher' %}
-                                <span class="badge bg-success">Giáo viên</span>
-                            {% endif %}
-                        </span>
-                        <span class="me-3">
-                            <i class="fas fa-clock"></i> {{ post.created_at_formatted }}
-                        </span>
-                        {% if post.updated_at %}
-                        <span class="me-3">
-                            <i class="fas fa-edit"></i> Chỉnh sửa: {{ post.updated_at_formatted }}
-                        </span>
-                        {% endif %}
-                        <span>
-                            <i class="fas fa-eye"></i> {{ post.views }} lượt xem
-                        </span>
-                    </div>
+    /* Back Button */
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: #f0f2f5;
+        border: none;
+        border-radius: 8px;
+        color: #050505;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        margin-bottom: 20px;
+    }
+
+    .back-btn:hover {
+        background: #e4e6eb;
+        color: #050505;
+        transform: translateX(-4px);
+    }
+
+    /* Post Card */
+    .post-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    /* Post Header */
+    .post-header {
+        padding: 20px;
+        border-bottom: 1px solid #e4e6eb;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .post-info {
+        flex: 1;
+    }
+
+    .author-name {
+        font-weight: 700;
+        font-size: 16px;
+        color: #050505;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .badge-teacher {
+        background: #28a745;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .post-meta {
+        font-size: 13px;
+        color: #65676b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .post-actions-header {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-edit, .btn-delete {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+    }
+
+    .btn-edit {
+        background: #ffc107;
+        color: #000;
+    }
+
+    .btn-edit:hover {
+        background: #ffb300;
+        transform: translateY(-2px);
+    }
+
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+    }
+
+    /* Post Content */
+    .post-content {
+        padding: 20px;
+    }
+
+    .post-tags {
+        margin-bottom: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .tag {
+        background: #e7f3ff;
+        color: #0066cc;
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .post-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #050505;
+        margin-bottom: 16px;
+        line-height: 1.3;
+    }
+
+    .post-text {
+        font-size: 16px;
+        line-height: 1.6;
+        color: #050505;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    /* Post Attachments */
+    .post-attachments {
+        background: #f7f8fa;
+        padding: 20px;
+    }
+
+    .attachment-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+    }
+
+    .attachment-img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .attachment-img:hover {
+        transform: scale(1.02);
+    }
+
+    .attachment-file {
+        background: white;
+        padding: 12px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: #050505;
+        border: 1px solid #e4e6eb;
+        transition: all 0.2s;
+    }
+
+    .attachment-file:hover {
+        background: #f0f2f5;
+        border-color: #0066cc;
+    }
+
+    /* Post Stats */
+    .post-stats {
+        padding: 12px 20px;
+        border-top: 1px solid #e4e6eb;
+        border-bottom: 1px solid #e4e6eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 15px;
+        color: #65676b;
+    }
+
+    .stats-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Post Action Buttons */
+    .post-action-bar {
+        padding: 4px 20px;
+        display: flex;
+        gap: 4px;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 12px;
+        background: transparent;
+        border: none;
+        color: #65676b;
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .action-btn:hover {
+        background: #f0f2f5;
+    }
+
+    .action-btn i {
+        font-size: 18px;
+    }
+
+    /* Comments Section */
+    .comments-section {
+        padding: 20px;
+    }
+
+    .comment-form {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .comment-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .comment-input-wrapper {
+        flex: 1;
+    }
+
+    .comment-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e4e6eb;
+        border-radius: 20px;
+        font-size: 15px;
+        font-family: inherit;
+        resize: none;
+        outline: none;
+        transition: all 0.2s;
+        background: #f0f2f5;
+    }
+
+    .comment-input:focus {
+        background: white;
+        border-color: #0066cc;
+    }
+
+    .comment-actions {
+        margin-top: 8px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .file-upload-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        background: #f0f2f5;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #65676b;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .file-upload-label:hover {
+        background: #e4e6eb;
+    }
+
+    .btn-submit {
+        padding: 8px 20px;
+        background: #0066cc;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-submit:hover {
+        background: #0052a3;
+        transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+        padding: 8px 20px;
+        background: #e4e6eb;
+        color: #050505;
+        border: none;
+        border-radius: 20px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+        background: #d0d2d6;
+    }
+
+    /* Comments List */
+    .comment {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .comment-content {
+        flex: 1;
+    }
+
+    .comment-bubble {
+        background: #f0f2f5;
+        padding: 12px 16px;
+        border-radius: 18px;
+        display: inline-block;
+        max-width: 100%;
+    }
+
+    .comment-author {
+        font-weight: 700;
+        font-size: 14px;
+        color: #050505;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .comment-text {
+        font-size: 15px;
+        color: #050505;
+        line-height: 1.4;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .comment-attachments {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .comment-img {
+        max-width: 250px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .comment-footer {
+        display: flex;
+        gap: 16px;
+        margin-top: 6px;
+        padding-left: 16px;
+        font-size: 13px;
+        font-weight: 600;
+        align-items: center;
+    }
+
+    .comment-action {
+        color: #65676b;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: inherit;
+    }
+
+    .comment-action:hover {
+        text-decoration: underline;
+    }
+
+    .comment-time {
+        color: #65676b;
+        font-size: 12px;
+    }
+
+    /* Reply Form */
+    .reply-form {
+        margin-top: 12px;
+        display: none;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .reply-form.active {
+        display: block;
+    }
+
+    /* Replies */
+    .replies {
+        margin-left: 52px;
+        margin-top: 12px;
+    }
+
+    .reply {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .reply-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #333;
+        font-weight: 700;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .reply-bubble {
+        background: #f0f2f5;
+        padding: 10px 14px;
+        border-radius: 16px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #65676b;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .forum-container {
+            padding: 12px;
+        }
+
+        .post-title {
+            font-size: 20px;
+        }
+
+        .post-header, .post-content, .comments-section {
+            padding: 16px;
+        }
+
+        .replies {
+            margin-left: 32px;
+        }
+    }
+</style>
+
+<div class="forum-container">
+    <!-- Back Button -->
+    <a href="{{ url_for('forum') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Quay lại danh sách</span>
+    </a>
+
+    <!-- Post Card -->
+    <div class="post-card">
+        <!-- Post Header -->
+        <div class="post-header">
+            <div class="avatar">{{ post.author_name[0:2].upper() }}</div>
+            <div class="post-info">
+                <div class="author-name">
+                    {{ post.author_name }}
+                    {% if post.author_role == 'teacher' %}
+                    <span class="badge-teacher">Giáo viên</span>
+                    {% endif %}
                 </div>
-                {% if is_author %}
-                <div>
-                    <a href="{{ url_for('forum_edit_post', post_id=post.id) }}" class="btn btn-sm btn-warning">
-                        <i class="fas fa-edit"></i> Sửa
-                    </a>
-                    <button class="btn btn-sm btn-danger" onclick="deletePost('{{ post.id }}')">
-                        <i class="fas fa-trash"></i> Xóa
-                    </button>
+                <div class="post-meta">
+                    <span><i class="fas fa-clock"></i> {{ post.created_at_formatted }}</span>
+                    {% if post.updated_at %}
+                    <span>·</span>
+                    <span><i class="fas fa-edit"></i> {{ post.updated_at_formatted }}</span>
+                    {% endif %}
+                    <span>·</span>
+                    <span><i class="fas fa-eye"></i> {{ post.views }} lượt xem</span>
                 </div>
-                {% endif %}
             </div>
+            {% if is_author %}
+            <div class="post-actions-header">
+                <a href="{{ url_for('forum_edit_post', post_id=post.id) }}" class="btn-edit">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <button class="btn-delete" onclick="deletePost('{{ post.id }}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            {% endif %}
+        </div>
 
+        <!-- Post Content -->
+        <div class="post-content">
             {% if post.tags %}
-            <div class="mb-3">
+            <div class="post-tags">
                 {% for tag in post.tags %}
-                    <span class="badge bg-info text-dark me-1">{{ tag }}</span>
+                <span class="tag">{{ tag }}</span>
                 {% endfor %}
             </div>
             {% endif %}
+            
+            <h1 class="post-title">{{ post.title }}</h1>
+            <div class="post-text">{{ post.content }}</div>
+        </div>
 
-            <div class="post-content mb-4" style="white-space: pre-wrap;">{{ post.content }}</div>
-
-            {% if post.attachments %}
-            <div class="mb-4">
-                <h5>File đính kèm:</h5>
-                <div class="row">
-                    {% for attachment in post.attachments %}
-                        {% if attachment.type == 'image' %}
-                        <div class="col-md-4 mb-3">
-                            <img src="{{ url_for('static', filename=attachment.path.replace('static/', '')) }}" 
-                                 class="img-fluid rounded" 
-                                 alt="{{ attachment.filename }}">
-                            <small class="d-block text-muted">{{ attachment.filename }}</small>
+        <!-- Post Attachments -->
+        {% if post.attachments %}
+        <div class="post-attachments">
+            <div class="attachment-grid">
+                {% for attachment in post.attachments %}
+                    {% if attachment.type == 'image' %}
+                    <img src="{{ url_for('static', filename=attachment.path.replace('static/', '')) }}" 
+                         class="attachment-img" 
+                         alt="{{ attachment.filename }}">
+                    {% else %}
+                    <a href="{{ url_for('static', filename=attachment.path.replace('static/', '')) }}" 
+                       class="attachment-file" download>
+                        <i class="fas fa-file-download" style="font-size: 24px; color: #0066cc;"></i>
+                        <div>
+                            <div style="font-weight: 600;">{{ attachment.filename }}</div>
+                            <div style="font-size: 12px; color: #65676b;">{{ (attachment.size / 1024) | round(1) }} KB</div>
                         </div>
-                        {% else %}
-                        <div class="col-md-6 mb-2">
-                            <a href="{{ url_for('static', filename=attachment.path.replace('static/', '')) }}" 
-                               class="btn btn-outline-primary btn-sm" download>
-                                <i class="fas fa-download"></i> {{ attachment.filename }}
-                                ({{ (attachment.size / 1024) | round(1) }} KB)
-                            </a>
+                    </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Post Stats -->
+        <div class="post-stats">
+            <div class="stats-item">
+                <i class="fas fa-comment" style="color: #0066cc;"></i>
+                <span id="commentCount">{{ comments|length }}</span> bình luận
+            </div>
+        </div>
+
+        <!-- Post Action Bar -->
+        <div class="post-action-bar">
+            <button class="action-btn" onclick="document.getElementById('commentContent').focus()">
+                <i class="far fa-comment"></i>
+                Bình luận
+            </button>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="comments-section">
+            <!-- Comment Form -->
+            <form id="commentForm" class="comment-form" enctype="multipart/form-data">
+                <div class="comment-avatar">{{ session.username[0:2].upper() if session.username else 'U' }}</div>
+                <div class="comment-input-wrapper">
+                    <textarea class="comment-input" 
+                              id="commentContent" 
+                              name="content" 
+                              placeholder="Viết bình luận..." 
+                              rows="1"></textarea>
+                    <input type="file" 
+                           id="commentFiles" 
+                           name="files" 
+                           multiple 
+                           accept=".png,.jpg,.jpeg,.gif,.pdf,.doc,.docx,.txt,.zip,.rar"
+                           style="display: none;">
+                    <div class="comment-actions">
+                        <label for="commentFiles" class="file-upload-label">
+                            <i class="fas fa-paperclip"></i>
+                            Đính kèm
+                        </label>
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-paper-plane"></i> Gửi
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <hr style="border: none; border-top: 1px solid #e4e6eb; margin: 20px 0;">
+
+            <!-- Comments List -->
+            <div id="commentsList">
+                {% if comments %}
+                    {% for comment in comments %}
+                        {% if not comment.parent_id %}
+                        <div class="comment" id="comment-{{ comment.id }}">
+                            <div class="comment-avatar">{{ comment.author_name[0:2].upper() }}</div>
+                            <div class="comment-content">
+                                <div class="comment-bubble">
+                                    <div class="comment-author">
+                                        {{ comment.author_name }}
+                                        {% if comment.author_role == 'teacher' %}
+                                        <span class="badge-teacher">Giáo viên</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="comment-text">{{ comment.content }}</div>
+                                </div>
+                                
+                                {% if comment.attachments %}
+                                <div class="comment-attachments">
+                                    {% for attachment in comment.attachments %}
+                                        {% if attachment.type == 'image' %}
+                                        <img src="{{ url_for('static', filename=attachment.path.replace('static/', '')) }}" 
+                                             class="comment-img" 
+                                             alt="{{ attachment.filename }}">
+                                        {% else %}
+                                        <a href="{{ url_for('static', filename=attachment.path.replace('static/', '')) }}" 
+                                           class="attachment-file" download style="display: inline-flex; padding: 8px 12px; font-size: 13px;">
+                                            <i class="fas fa-download"></i>
+                                            {{ attachment.filename }}
+                                        </a>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                
+                                <div class="comment-footer">
+                                    <button class="comment-action" onclick="toggleReply('{{ comment.id }}')">
+                                        Phản hồi
+                                    </button>
+                                    {% if comment.author_id == current_user_id %}
+                                    <button class="comment-action" onclick="deleteComment('{{ comment.id }}')">
+                                        Xóa
+                                    </button>
+                                    {% endif %}
+                                    <span class="comment-time">{{ comment.created_at_formatted }}</span>
+                                </div>
+                                
+                                <!-- Reply Form -->
+                                <div class="reply-form comment-form" id="replyForm-{{ comment.id }}">
+                                    <div class="reply-avatar">{{ session.username[0:2].upper() if session.username else 'U' }}</div>
+                                    <div class="comment-input-wrapper">
+                                        <form class="reply-form-submit" data-parent-id="{{ comment.id }}" enctype="multipart/form-data">
+                                            <textarea class="comment-input" 
+                                                      name="content" 
+                                                      placeholder="Viết phản hồi..." 
+                                                      rows="1"></textarea>
+                                            <input type="file" 
+                                                   id="replyFile-{{ comment.id }}" 
+                                                   name="files" 
+                                                   multiple 
+                                                   accept=".png,.jpg,.jpeg,.gif,.pdf,.doc,.docx,.txt,.zip,.rar"
+                                                   style="display: none;">
+                                            <div class="comment-actions">
+                                                <label for="replyFile-{{ comment.id }}" class="file-upload-label">
+                                                    <i class="fas fa-paperclip"></i>
+                                                    Đính kèm
+                                                </label>
+                                                <button type="submit" class="btn-submit">Gửi</button>
+                                                <button type="button" class="btn-cancel" onclick="toggleReply('{{ comment.id }}')">Hủy</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                
+                                <!-- Replies -->
+                                {% set replies = comments | selectattr('parent_id', 'equalto', comment.id) | list %}
+                                {% if replies %}
+                                <div class="replies">
+                                    {% for reply in replies %}
+                                    <div class="reply">
+                                        <div class="reply-avatar">{{ reply.author_name[0:2].upper() }}</div>
+                                        <div class="comment-content">
+                                            <div class="reply-bubble">
+                                                <div class="comment-author" style="font-size: 13px;">
+                                                    {{ reply.author_name }}
+                                                    {% if reply.author_role == 'teacher' %}
+                                                    <span class="badge-teacher" style="font-size: 10px;">Giáo viên</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="comment-text" style="font-size: 14px;">{{ reply.content }}</div>
+                                            </div>
+                                            
+                                            {% if reply.attachments %}
+                                            <div class="comment-attachments">
+                                                {% for attachment in reply.attachments %}
+                                                    {% if attachment.type == 'image' %}
+                                                    <img src="{{ url_for('static', filename=attachment.path.replace('static/', '')) }}" 
+                                                         class="comment-img" 
+                                                         style="max-width: 200px;"
+                                                         alt="{{ attachment.filename }}">
+                                                    {% else %}
+                                                    <a href="{{ url_for('static', filename=attachment.path.replace('static/', '')) }}" 
+                                                       class="attachment-file" download style="display: inline-flex; padding: 6px 10px; font-size: 12px;">
+                                                        <i class="fas fa-download"></i>
+                                                        {{ attachment.filename }}
+                                                    </a>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <div class="comment-footer" style="font-size: 12px;">
+                                                {% if reply.author_id == current_user_id %}
+                                                <button class="comment-action" onclick="deleteComment('{{ reply.id }}')">
+                                                    Xóa
+                                                </button>
+                                                {% endif %}
+                                                <span class="comment-time">{{ reply.created_at_formatted }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                         {% endif %}
                     {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <i class="far fa-comments"></i>
+                    <p>Chưa có bình luận nào. Hãy là người đầu tiên!</p>
                 </div>
+                {% endif %}
             </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="card mt-4">
-        <div class="card-header">
-            <h5><i class="fas fa-comments"></i> Bình luận ({{ comments|length }})</h5>
-        </div>
-        <div class="card-body">
-            <form id="commentForm" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <textarea class="form-control" id="commentContent" name="content" 
-                              rows="3" placeholder="Viết bình luận..." required></textarea>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">File đính kèm (tùy chọn):</label>
-                    <input type="file" class="form-control" name="files" multiple 
-                           accept=".png,.jpg,.jpeg,.gif,.pdf,.doc,.docx,.txt,.zip,.rar">
-                    <small class="text-muted">Tối đa 10MB mỗi file. Hỗ trợ: ảnh, PDF, Word, ZIP, RAR</small>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-paper-plane"></i> Gửi bình luận
-                </button>
-            </form>
-
-            <hr>
-
-            {% if comments %}
-                {% for comment in comments %}
-                <div class="comment-item mb-3 p-3 border rounded">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <strong>{{ comment.author_name }}</strong>
-                            {% if comment.author_role == 'teacher' %}
-                                <span class="badge bg-success">Giáo viên</span>
-                            {% endif %}
-                            <small class="text-muted d-block">{{ comment.created_at_formatted }}</small>
-                        </div>
-                        {% if comment.author_id == session.user_id %}
-                        <button class="btn btn-sm btn-outline-danger" 
-                                onclick="deleteComment('{{ comment.id }}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        {% endif %}
-                    </div>
-                    <p class="mt-2 mb-2" style="white-space: pre-wrap;">{{ comment.content }}</p>
-                    {% if comment.attachments %}
-                    <div class="mt-2">
-                        {% for attachment in comment.attachments %}
-                            {% if attachment.type == 'image' %}
-                            <img src="{{ url_for('static', filename=attachment.path.replace('static/', '')) }}" 
-                                 class="img-thumbnail me-2" style="max-width: 150px;" 
-                                 alt="{{ attachment.filename }}">
-                            {% else %}
-                            <a href="{{ url_for('static', filename=attachment.path.replace('static/', '')) }}" 
-                               class="btn btn-sm btn-outline-secondary" download>
-                                <i class="fas fa-download"></i> {{ attachment.filename }}
-                            </a>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            {% else %}
-                <p class="text-muted text-center">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
-            {% endif %}
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
 <script>
+// Auto resize textarea
+document.querySelectorAll('.comment-input').forEach(textarea => {
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+});
+
+// Submit comment
 document.getElementById('commentForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
     const formData = new FormData(this);
     
     try {
@@ -166,11 +817,9 @@ document.getElementById('commentForm').addEventListener('submit', async function
             method: 'POST',
             body: formData
         });
-        
         const result = await response.json();
         
         if (result.success) {
-            alert(result.message);
             location.reload();
         } else {
             alert('Lỗi: ' + result.message);
@@ -180,38 +829,73 @@ document.getElementById('commentForm').addEventListener('submit', async function
     }
 });
 
+// Submit reply
+document.addEventListener('submit', async function(e) {
+    if (e.target.classList.contains('reply-form-submit')) {
+        e.preventDefault();
+        
+        const parentId = e.target.dataset.parentId;
+        const formData = new FormData(e.target);
+        formData.append('parent_id', parentId);
+        
+        try {
+            const response = await fetch('{{ url_for("forum_add_comment", post_id=post.id) }}', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                location.reload();
+            } else {
+                alert('Lỗi: ' + result.message);
+            }
+        } catch (error) {
+            alert('Có lỗi xảy ra: ' + error);
+        }
+    }
+});
+
+// Toggle reply form
+function toggleReply(commentId) {
+    const form = document.getElementById('replyForm-' + commentId);
+    form.classList.toggle('active');
+    if (form.classList.contains('active')) {
+        const textarea = form.querySelector('.comment-input');
+        setTimeout(() => textarea.focus(), 100);
+    }
+}
+
+// Delete post
 function deletePost(postId) {
     if (!confirm('Bạn có chắc muốn xóa bài viết này?')) return;
     
-    fetch(`/forum/delete/${postId}`, {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            alert(result.message);
-            window.location.href = '{{ url_for("forum") }}';
-        } else {
-            alert('Lỗi: ' + result.message);
-        }
-    });
+    fetch(`/forum/delete/${postId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert(result.message);
+                window.location.href = '{{ url_for("forum") }}';
+            } else {
+                alert('Lỗi: ' + result.message);
+            }
+        });
 }
 
+// Delete comment
 function deleteComment(commentId) {
     if (!confirm('Bạn có chắc muốn xóa bình luận này?')) return;
     
-    fetch(`/forum/delete-comment/${commentId}`, {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            alert(result.message);
-            location.reload();
-        } else {
-            alert('Lỗi: ' + result.message);
-        }
-    });
+    fetch(`/forum/delete-comment/${commentId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                location.reload();
+            } else {
+                alert('Lỗi: ' + result.message);
+            }
+        });
 }
 </script>
+
 {% endblock %}

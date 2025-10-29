@@ -1,1 +1,25 @@
-[]
+[
+  {
+    "id": "post_0001",
+    "title": "test",
+    "content": "hhhhhh",
+    "author_id": "1",
+    "author_name": "colan",
+    "author_role": "teacher",
+    "created_at": "2025-10-29T18:54:18.063368",
+    "updated_at": null,
+    "attachments": [
+      {
+        "type": "file",
+        "filename": "mau_e_thi.docx",
+        "path": "static/uploads/forum/23264750_mau_e_thi.docx",
+        "size": 19847
+      }
+    ],
+    "tags": [
+      "python"
+    ],
+    "views": 32,
+    "comments_count": 2
+  }
+]
