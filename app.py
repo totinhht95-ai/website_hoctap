@@ -466,7 +466,19 @@ def add_document():
     
     return render_template('add_document.html')
 
+@app.route('/teacher/delete_document/<doc_id>', methods=['POST'])
+@teacher_required
+def delete_document(doc_id):
+    try:
+        success = db.delete_document(doc_id)
+        if success:
+            return jsonify({'success': True, 'message': 'Xóa tài liệu thành công'})
+        else:
+            return jsonify({'success': False, 'message': 'Không tìm thấy tài liệu'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'})
 
+######################################################################################################################
 @app.route('/teacher/import_exam', methods=['GET', 'POST'])
 @teacher_required
 def import_exam():

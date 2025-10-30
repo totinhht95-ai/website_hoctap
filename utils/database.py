@@ -58,7 +58,6 @@ class Database:
                     data.setdefault('exams', [])
                     exams = data.get('exams', [])
                 if isinstance(data, list):
-                    # Hỗ trợ định dạng cũ (danh sách thuần các câu hỏi)
                     exams = data
                     data = {'exams': exams}
                 if not isinstance(data, dict):
@@ -236,16 +235,27 @@ class Database:
         new_doc = {
             'id': doc_id,
             'title': doc_data['title'],
-            'type': doc_data.get('type', 'document'),
             'url': url,
             'description': doc_data.get('description', ''),
+            'grade': doc_data.get('grade', '12'),
+            'doc_type': doc_data.get('doc_type', 'document'),
+            'link_type': doc_data.get('link_type', 'other'),
+            'category': doc_data.get('category', ''),
             'created_at': datetime.now().isoformat()
         }
         
         documents.append(new_doc)
         self._save_json(self.documents_file, documents)
         return doc_id
-    
+    def delete_document(self, doc_id):
+        documents = self.get_all_documents()
+        original_length = len(documents)
+        documents = [d for d in documents if d['id'] != doc_id]
+        
+        if len(documents) < original_length:
+            self._save_json(self.documents_file, documents)
+            return True
+        return False
     def get_all_submissions(self):
         return self._load_json(self.submissions_file)
     
