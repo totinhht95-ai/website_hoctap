@@ -247,7 +247,7 @@ class Database:
         documents.append(new_doc)
         self._save_json(self.documents_file, documents)
         return doc_id
-    def delete_document(self, doc_id):
+    def delete_document(self, doc_id):###################
         documents = self.get_all_documents()
         original_length = len(documents)
         documents = [d for d in documents if d['id'] != doc_id]

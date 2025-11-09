@@ -519,7 +519,7 @@
                     </li>
                     
                     {% if session.role == 'teacher' %}
-                        <li><a href="{{ url_for('teacher_dashboard') }}">Thống kê</a></li>
+                        <li><a href="{{ url_for('teacher_dashboard') }}"></a></li>
                     {% else %}
                         <li><a href="{{ url_for('student_dashboard') }}">Thống kê</a></li>
                     {% endif %}
