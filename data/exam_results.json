@@ -1,1 +1,137 @@
-[]
+[
+  {
+    "user_id": "4",
+    "username": "tuan",
+    "grade": "10",
+    "exam_id": "exam_10_01",
+    "exam_title": "Đề trắc nghiệm Python 10 - Cơ bản về Python",
+    "score": 0.5,
+    "correct_count": 1,
+    "total_questions": 20,
+    "total_points": 1.0,
+    "question_breakdown": [
+      {
+        "question_number": 1,
+        "type": "standard",
+        "score": 0.0,
+        "selected": "A"
+      },
+      {
+        "question_number": 2,
+        "type": "standard",
+        "score": 0.0,
+        "selected": "D"
+      },
+      {
+        "question_number": 3,
+        "type": "standard",
+        "score": 0.0,
+        "selected": "A"
+      },
+      {
+        "question_number": 4,
+        "type": "standard",
+        "score": 0.0,
+        "selected": "A"
+      },
+      {
+        "question_number": 5,
+        "type": "standard",
+        "score": 0.0,
+        "selected": "B"
+      },
+      {
+        "question_number": 6,
+        "type": "standard",
+        "score": 1.0,
+        "selected": "C"
+      },
+      {
+        "question_number": 7,
+        "type": "standard",
+        "score": 0.0,
+        "selected": "D"
+      },
+      {
+        "question_number": 8,
+        "type": "standard",
+        "score": 0.0,
+        "selected": "D"
+      },
+      {
+        "question_number": 9,
+        "type": "standard",
+        "score": 0.0,
+        "selected": ""
+      },
+      {
+        "question_number": 10,
+        "type": "standard",
+        "score": 0.0,
+        "selected": "A"
+      },
+      {
+        "question_number": 11,
+        "type": "standard",
+        "score": 0.0,
+        "selected": ""
+      },
+      {
+        "question_number": 12,
+        "type": "standard",
+        "score": 0.0,
+        "selected": ""
+      },
+      {
+        "question_number": 13,
+        "type": "standard",
+        "score": 0.0,
+        "selected": ""
+      },
+      {
+        "question_number": 14,
+        "type": "standard",
+        "score": 0.0,
+        "selected": ""
+      },
+      {
+        "question_number": 15,
+        "type": "standard",
+        "score": 0.0,
+        "selected": ""
+      },
+      {
+        "question_number": 16,
+        "type": "standard",
+        "score": 0.0,
+        "selected": ""
+      },
+      {
+        "question_number": 17,
+        "type": "standard",
+        "score": 0.0,
+        "selected": ""
+      },
+      {
+        "question_number": 18,
+        "type": "standard",
+        "score": 0.0,
+        "selected": ""
+      },
+      {
+        "question_number": 19,
+        "type": "standard",
+        "score": 0.0,
+        "selected": ""
+      },
+      {
+        "question_number": 20,
+        "type": "standard",
+        "score": 0.0,
+        "selected": ""
+      }
+    ],
+    "submitted_at": "21/11/2025 16:44:21",
+    "time_spent_seconds": 33
+  }
+]
