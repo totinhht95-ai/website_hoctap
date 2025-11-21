@@ -38,7 +38,7 @@ def chat_with_gemini(user_message):
     if not GEMINI_API_KEY:
         return "Xin lỗi, dịch vụ AI chưa được cấu hình. Vui lòng liên hệ quản trị viên để bổ sung GEMINI_API_KEY."
     try:
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        model = genai.GenerativeModel('gemini-2.0-flash')
         
         system_prompt = """
         Bạn là trợ lý AI cho học sinh THPT ôn thi môn Tin học.
